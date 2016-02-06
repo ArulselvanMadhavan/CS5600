@@ -15,6 +15,7 @@
 #include <string.h>
 
 ucontext_t currentContext;
+int writeCounter = 0;
 
 char * getNextInValidPosition(char * p,char separator){
     while (!isspace(*p) && *p != '\0' && *p != separator)
@@ -47,12 +48,20 @@ getwords(char *line, char *words[]) {
     *p++='\0';
 }
 
+wToHeaderFile(){
+    FILE * headerFile;
+    headerFile = fopen("header","w+");
+    write(fileno(headerFile),&currentContext,sizeof(currentContext));
+    if(fclose(headerFile) !=0){
+        printf("Error occured while closing the file");
+    }
+}
+
 wToFile(){
 
     FILE * writer;
     FILE *mapsFile;
     FILE *logFile;
-    FILE *contextFile;
     char *line = NULL;
     size_t len =0;
     ssize_t reader;
@@ -61,6 +70,7 @@ wToFile(){
     char *words[2];
     int nob=0;
     long total=0;
+    int res = 0;
     mapsFile = fopen("/proc/self/maps", "r");
     writer = fopen("myckpt","w+");
     logFile = fopen("writeLog.txt","w+");
@@ -108,23 +118,46 @@ wToFile(){
 
     fprintf(logFile,"Total:%ld\n",total);
     /*
-     * Close the Resources and free the memory
-     */
+    * Close the Resources and free the memory
+    */
     fclose(mapsFile);
-    fclose(writer);
     fclose(logFile);
-    exit(EXIT_SUCCESS);
-}
 
+    /**
+     *
+     */
+
+    writeCounter = 1;
+    getcontext(&currentContext);
+    printf("\nSet context done\n");
+    if(writeCounter == 1) {
+        printf("\nSleeping\n");
+//        sleep(5);
+        nob = write(fileno(writer),&currentContext,
+                    sizeof(currentContext));
+        printf("Context Bytes written:%d\n",nob);
+        printf("Total+CurrentContext:%ld\n",
+                total+sizeof(currentContext));
+        fclose(writer);
+        exit(EXIT_SUCCESS);
+    }
+}
 /*
  * Create Checkpoint image
  */
 void createImage(int signo) {
-    getcontext(&currentContext);
     if (signo == SIGUSR2) {
-//        if(res != -1) {
             printf("\n!!!!Received a request to create Image file!!!\n");
             wToFile();
+        //Contents are dumped. Now I can manipulate Global Variables
+//            writeCounter = 1;
+//            getcontext(&currentContext);
+//        printf("\nSet context done\n");
+//        if(writeCounter == 1) {
+//            printf("\nSleeping\n");
+//            sleep(5);
+//            wToHeaderFile();
+//            exit(EXIT_SUCCESS);
 //        }
     }
 }
@@ -133,5 +166,4 @@ void createImage(int signo) {
 __attribute__ ((constructor))
 void init_signal() {
     signal(SIGUSR2, createImage);
-    printf("Signal Cons called");
 }

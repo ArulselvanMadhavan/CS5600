@@ -1,0 +1,40 @@
+Pos After reading header Length:	4
+Header: 00400000	790528	r-xp
+Pos after reading Header:	26
+Pos after reading memory:	790554
+
+Pos After reading header Length:	790558
+Header: 006c0000	12288	rw-p
+Pos after reading Header:	790579
+Pos after reading memory:	802867
+
+Pos After reading header Length:	802871
+Header: 006c3000	12288	rw-p
+Pos after reading Header:	802892
+Pos after reading memory:	815180
+
+Pos After reading header Length:	815184
+Header: 019ca000	143360	rw-p
+Pos after reading Header:	815206
+Pos after reading memory:	958566
+
+Pos After reading header Length:	958570
+Header: 7fe297fdc000	8192	rw-p
+Pos after reading Header:	958594
+Pos after reading memory:	966786
+
+Pos After reading header Length:	966790
+Header: 7ffe7e877000	135168	rw-p
+Pos after reading Header:	966816
+Pos after reading memory:	1101984
+
+Pos After reading header Length:	1101988
+Header: 7ffe7e8e9000	8192	r--p
+Pos after reading Header:	1102012
+Pos after reading memory:	1110204
+
+Pos After reading header Length:	1110208
+Header: 7ffe7e8eb000	8192	r-xp
+Pos after reading Header:	1110232
+Pos after reading memory:	1118424
+

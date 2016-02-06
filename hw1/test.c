@@ -139,6 +139,5 @@ int main(void){
         sleep(1);
         counter++;
         printf("%d\n",counter);
-//        printf("\n");
     }
 }
