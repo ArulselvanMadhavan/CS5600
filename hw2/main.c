@@ -102,17 +102,18 @@ spawnWorkers(char *workerpath, char *mechanism, int x, int n) {
     if (strcmp(mechanism, "select") == 0) {
         selectMechanism(counter, pipefds);
     }
-//    else if(strcmp(mechanism,"poll")==0)
-//    {
-//        pollmechanism(counter,pipefds);
-//    } else if(strcmp(mechanism,"epoll")== 0)
-//    {
-//        epollmechanism(counter,pipefds);
-//    }
-//    else if(strcmp(mechanism,"sequential")==0)
-//    {
-//        sequentialMechanism(counter,pipefds,pidArray);
-//    }
+    else if(strcmp(mechanism,"poll")==0)
+    {
+        pollmechanism(counter,pipefds);
+    }
+    else if(strcmp(mechanism,"epoll")== 0)
+    {
+        epollmechanism(counter,pipefds);
+    }
+    else if(strcmp(mechanism,"sequential")==0)
+    {
+        sequentialMechanism(counter,pipefds,pidArray);
+    }
     return 0;
 }
 
@@ -138,20 +139,20 @@ selectMechanism(int counter, int pipefds[]) {
     int nbytes = 0;
     double d = 0.1;
     double total = 0.0;
+    int counter_dup = counter;
     while (counter > 0) {
         fd_set dup = master;
-        retval = select(max_fd + 1, &dup, NULL, NULL, NULL);
+        retval = select(max_fd+1, &dup, NULL, NULL, NULL);
         if (retval < 0) {
             printf("Select returned an incorrect value of %d\n", retval);
             perror("select()");
         }
         else if (retval) {
             /* check which fd is avaialbe for read */
-            for (i = 0; i <= counter; i++) {
+            for (i = 0; i < counter_dup; i++) {
                 int fd = pipefds[i * 2];
-                printf("Reading FD:%d\n",fd);
                 if (FD_ISSET(fd, &dup)) {
-                    printf("%d is set\n", fd);
+                    printf("Reading data for %d from fd:%d\n",i+1 ,fd);
                     nbytes = read(fd, &d, sizeof(double));
                     printf("Bytes:%d\n", nbytes);
                     printf("Value:%lf\n", d);
@@ -159,8 +160,6 @@ selectMechanism(int counter, int pipefds[]) {
                     counter--;
                 }
             }
-
-//            counter--;
         }
         else {
             printf("No data to read\n");
@@ -173,29 +172,41 @@ selectMechanism(int counter, int pipefds[]) {
 
 
 pollmechanism(int counter, int pipefds[]) {
-    struct pollfd fds[1];
+    struct pollfd pollfds[counter];
+    int i =0;
+    for(i=0;i<counter;i++)
+    {
+        pollfds[i].fd = pipefds[i*2];
+        pollfds[i].events = 0;
+        pollfds[i].events |= POLL_IN;
+    }
+//    struct pollfd fds[1];
     int timeout;
     int pret;
-    fds[0].fd = pipefds[0];
-    fds[0].events = 0;
-    fds[0].events |= POLL_IN;
     timeout = 3000;
 
     int nbytes = 0;
     double d = 0.1;
     double total = 0.0;
-
+    int counter_dup = counter;
     while (counter > 0) {
-        pret = poll(fds, 1, timeout);
+        pret = poll(pollfds, counter_dup, timeout);
         if (pret < 0) {
             perror("poll()");
         }
         else if (pret) {
-            nbytes = read(pipefds[0], &d, sizeof(double));
-            printf("Bytes:%d\n", nbytes);
-            printf("Value:%lf\n", d);
-            total = total + d;
-            counter--;
+            for(i=0;i<counter_dup;i++)
+            {
+                if(pollfds[i].revents && POLL_IN)
+                {
+                    printf("Worker id %d from fd:%d\n",i+1,pollfds[i].fd);
+                    nbytes = read(pollfds[i].fd, &d, sizeof(double));
+                    printf("Bytes:%d\n", nbytes);
+                    printf("Value:%lf\n", d);
+                    total = total + d;
+                    counter--;
+                }
+            }
         }
         else {
             printf("No data to read\n");
@@ -206,48 +217,63 @@ pollmechanism(int counter, int pipefds[]) {
 
 
 epollmechanism(int counter, int pipefds[]) {
-    int epfd = epoll_create(1);
-    struct epoll_event ev, events[1];
+    int epfd = epoll_create(counter);
+    struct epoll_event events[counter];
     int nfds;
-    if (epfd < 0) {
+    if (epfd < 0)
+    {
         perror("epoll_create");
         exit(EXIT_FAILURE);
     }
-    ev.events = EPOLLIN;
-    ev.data.fd = pipefds[0];
-    if (epoll_ctl(epfd, EPOLL_CTL_ADD, pipefds[0], &ev) == -1) {
-        perror("epll_ctl");
-        exit(EXIT_FAILURE);
+    int i;
+    for(i=0;i<counter;i++)
+    {
+        events[i].events = EPOLLIN;
+        events[i].data.fd = pipefds[i*2];
+    }
+
+    for(i =0;i<counter;i++)
+    {
+        if (epoll_ctl(epfd, EPOLL_CTL_ADD, pipefds[i*2], &events[i]) == -1)
+        {
+            perror("epll_ctl");
+            exit(EXIT_FAILURE);
+        }
     }
 
     int nbytes = 0;
     double d = 0.1;
     double total = 0.0;
-    while (counter > 0) {
-        nfds = epoll_wait(epfd, events, 1, -1);
-        if (nfds == -1) {
+    int counter_dup = counter;
+    while (counter > 0)
+    {
+        nfds = epoll_wait(epfd, events, counter_dup, -1);
+        if (nfds == -1)
+        {
             perror("epoll_wait");
             exit(EXIT_FAILURE);
         }
-        else if (nfds > 0) {
-            while (nfds > 0) {
-                if (events[nfds - 1].data.fd == pipefds[0]) {
-                    if (events[nfds - 1].events & EPOLLHUP || events[nfds - 1].events & EPOLLERR) {
-                        close(pipefds[0]);
-                        exit(EXIT_FAILURE);
-                    }
-                    nbytes = read(pipefds[0], &d, sizeof(double));
-                    printf("Bytes:%d\n", nbytes);
-                    printf("Value:%lf\n", d);
-                    total = total + d;
-                    counter--;
+        else if (nfds > 0)
+        {
+            printf("Read %d events from the pipes\n",nfds);
+            for(i =0;i<nfds;i++)
+            {
+                if (events[i].events & EPOLLHUP || events[i].events & EPOLLERR) {
+                    close(events[i].data.fd);
+                    exit(EXIT_FAILURE);
                 }
-                nfds--;
+                printf("Reading from FD:%d\n",events[i].data.fd);
+                nbytes = read(events[i].data.fd, &d, sizeof(double));
+                printf("Bytes:%d\n", nbytes);
+                printf("Value:%lf\n", d);
+                total = total + d;
+                counter--;
             }
         }
     }
     printf("Total:\t%lf", total + 1);
 }
+
 
 sequentialMechanism(int counter, int pipefds[], pid_t pidArray[]) {
     int status;
@@ -257,16 +283,20 @@ sequentialMechanism(int counter, int pipefds[], pid_t pidArray[]) {
     int nbytes = 0;
     double d = 0.1;
     double total = 0.0;
-
-    while (counter > 0) {
-        curr_pid = waitpid(pidArray[counter - 1], &status, options);
-        if (curr_pid == pidArray[counter - 1]) {
-            nbytes = read(pipefds[0], &d, sizeof(double));
+    int i =0;
+    for(i=0;i<counter;)
+    {
+        curr_pid = waitpid(pidArray[counter - i - 1], &status,0);
+        printf("PID:%d\n",curr_pid);
+        printf("Status:%d\n",status);
+        if(WIFEXITED(status))
+        {
+            nbytes = read(pipefds[i*2], &d, sizeof(double));
             printf("Bytes:%d\n", nbytes);
             printf("Value:%lf\n", d);
             total = total + d;
-            printf("PID:%d\n", (int) pidArray[counter - 1]);
-            counter--;
+            d = 0.0;
+            i++;
         }
     }
     printf("Total:\t%lf\n", total + 1);
