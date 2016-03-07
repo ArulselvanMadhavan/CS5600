@@ -1,0 +1,22 @@
+1. Realloc(void * ptr,size_t newSize)
+Buffer size - 32 blocks.
+If the newsize is less than the actual block, then the block is divided and the remaining size is added to the free list.
+
+2. Realloc - Scenario-> 
+	a) malloc(64)(Actual Size:96) -> realloc(16)(Actual Size:48) This splits the block into two 48 byte blocks. One byte is returned to user. Another byte is added to the free bin.
+	b) realloc(64) -> When a request for 64 comes?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

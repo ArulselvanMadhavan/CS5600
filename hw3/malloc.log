@@ -1,0 +1,94 @@
+MALLOC REQUEST for 1
+MALLOC REQUEST for 40
+MALLOC REQUEST for 64
+MALLOC REQUEST for 72
+MALLOC REQUEST for 3
+Malloc Hit for binId 8
+Current Size:312	Requested Size:40	,Remaining Size+Overhead:240
+Total Size:312	Aligned Size:280
+BinId 8 for Size 280
+Block to be freed should be in Bin:8	140286828101680
+Only block in the bin.Emptying bin
+Block Divisible Status:240
+
+!!!!!Header Stats!!!!!
+Address:140286828101680	Next:0	Prev:0	Size:312
+
+!!!!!Footer Stats!!!!!
+Address:140286828101984	Footer Size:312
+Requested Size:40
+
+!!!!!Header Stats!!!!!
+Address:140286828101680	Next:0	Prev:0	Size:41
+
+!!!!!Footer Stats!!!!!
+Address:140286828101712	Footer Size:41
+
+<-----Broken Block----->
+
+!!!!!Header Stats!!!!!
+Address:140286828101720	Next:0	Prev:0	Size:272
+
+!!!!!Footer Stats!!!!!
+Address:140286828101984	Footer Size:272
+MALLOC REQUEST for 43
+Malloc Hit for binId 7
+Current Size:272	Requested Size:80	,Remaining Size+Overhead:160
+Total Size:272	Aligned Size:240
+BinId 7 for Size 240
+Block to be freed should be in Bin:7	140286828101720
+Only block in the bin.Emptying bin
+Block Divisible Status:160
+
+!!!!!Header Stats!!!!!
+Address:140286828101720	Next:0	Prev:0	Size:272
+
+!!!!!Footer Stats!!!!!
+Address:140286828101984	Footer Size:272
+Requested Size:80
+
+!!!!!Header Stats!!!!!
+Address:140286828101720	Next:0	Prev:0	Size:81
+
+!!!!!Footer Stats!!!!!
+Address:140286828101792	Footer Size:81
+
+<-----Broken Block----->
+
+!!!!!Header Stats!!!!!
+Address:140286828101800	Next:0	Prev:0	Size:192
+
+!!!!!Footer Stats!!!!!
+Address:140286828101984	Footer Size:192
+MALLOC REQUEST for 63
+Malloc Hit for binId 7
+Current Size:192	Requested Size:96	,Remaining Size+Overhead:64
+Total Size:192	Aligned Size:160
+BinId 7 for Size 160
+Block to be freed should be in Bin:7	140286828101800
+Only block in the bin.Emptying bin
+Block Divisible Status:64
+
+!!!!!Header Stats!!!!!
+Address:140286828101800	Next:0	Prev:0	Size:192
+
+!!!!!Footer Stats!!!!!
+Address:140286828101984	Footer Size:192
+Requested Size:96
+
+!!!!!Header Stats!!!!!
+Address:140286828101800	Next:0	Prev:0	Size:97
+
+!!!!!Footer Stats!!!!!
+Address:140286828101888	Footer Size:97
+
+<-----Broken Block----->
+
+!!!!!Header Stats!!!!!
+Address:140286828101896	Next:0	Prev:0	Size:96
+
+!!!!!Footer Stats!!!!!
+Address:140286828101984	Footer Size:96
+MALLOC REQUEST for 640
+Malloc Hit for binId 9
+Current Size:33	Requested Size:672	,Remaining Size+Overhead:-671

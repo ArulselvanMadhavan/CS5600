@@ -1,0 +1,60 @@
+HEAP STATUS AFTER REALLOC 14
+
+Printing Heap
+Address:140286828101648,Actual Size:0,Block Size:32,Next:140286828101792,Prev:0
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101792,Actual Size:16,Block Size:48,Next:140286828101720,Prev:140286828101648
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101720,Actual Size:40,Block Size:72,Next:140286828101680,Prev:140286828101792
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101680,Actual Size:8,Block Size:40,Next:140286828101888,Prev:140286828101720
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101888,Actual Size:0,Block Size:0,Next:0,Prev:140286828101680
+HEAP STATUS AFTER REALLOC 64
+
+Printing Heap
+Address:140286828101648,Actual Size:0,Block Size:32,Next:140286828101792,Prev:0
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101792,Actual Size:64,Block Size:96,Next:140286828101720,Prev:140286828101648
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101720,Actual Size:40,Block Size:72,Next:140286828101680,Prev:140286828101792
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101680,Actual Size:8,Block Size:40,Next:140286828101888,Prev:140286828101720
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101888,Actual Size:0,Block Size:0,Next:0,Prev:140286828101680
+HEAP STATUS AFTER REALLOC 72
+
+Printing Heap
+Address:140286828101648,Actual Size:0,Block Size:32,Next:140286828101888,Prev:0
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101888,Actual Size:72,Block Size:104,Next:140286828101720,Prev:140286828101648
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101720,Actual Size:40,Block Size:72,Next:140286828101680,Prev:140286828101888
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101680,Actual Size:8,Block Size:40,Next:140286828101992,Prev:140286828101720
+			 | 			
+			 | 			
+			\|/			
+Address:140286828101992,Actual Size:0,Block Size:0,Next:0,Prev:140286828101680

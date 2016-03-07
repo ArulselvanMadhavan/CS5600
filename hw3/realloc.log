@@ -1,0 +1,82 @@
+REALLOC REQUEST for block headat 140286828101792	 Size:48
+
+!!!!!Header Stats!!!!!
+Address:140286828101792	Next:140286828101720	Prev:140286828101648	Size:96
+
+Shrink the Block
+Current Block size:96	Shrunk Block size:48
+Block Divisible Status:16
+
+!!!!!Header Stats!!!!!
+Address:140286828101792	Next:140286828101720	Prev:140286828101648	Size:96
+
+!!!!!Footer Stats!!!!!
+Address:140286828101880	Footer Size:96
+Requested Size:48
+
+!!!!!Header Stats!!!!!
+Address:140286828101792	Next:140286828101720	Prev:140286828101648	Size:49
+
+!!!!!Footer Stats!!!!!
+Address:140286828101832	Footer Size:49
+
+<-----Broken Block----->
+
+!!!!!Header Stats!!!!!
+Address:140286828101840	Next:0	Prev:0	Size:48
+
+!!!!!Footer Stats!!!!!
+Address:140286828101880	Footer Size:48
+REALLOC REQUEST for block headat 140286828101792	 Size:96
+
+!!!!!Header Stats!!!!!
+Address:140286828101792	Next:140286828101720	Prev:140286828101648	Size:48
+Next Block Stats
+
+!!!!!Header Stats!!!!!
+Address:140286828101840	Next:0	Prev:0	Size:48
+Next->Occupied:0->HasSpace:1Block Divisible Status:-32
+
+Coalesced Block Stats
+
+!!!!!Header Stats!!!!!
+Address:140286828101792	Next:140286828101720	Prev:140286828101648	Size:97
+REALLOC REQUEST for block headat 140286828101792	 Size:104
+
+!!!!!Header Stats!!!!!
+Address:140286828101792	Next:140286828101720	Prev:140286828101648	Size:96
+
+Requesting a block from heap
+New Realloc block stats
+
+!!!!!Header Stats!!!!!
+Address:140286828101888	Next:140286828101792	Prev:140286828101648	Size:105
+REALLOC REQUEST for block headat 140286828101888	 Size:40
+
+!!!!!Header Stats!!!!!
+Address:140286828101888	Next:140286828101720	Prev:140286828101648	Size:104
+
+Shrink the Block
+Current Block size:104	Shrunk Block size:40
+Block Divisible Status:32
+
+!!!!!Header Stats!!!!!
+Address:140286828101888	Next:140286828101720	Prev:140286828101648	Size:104
+
+!!!!!Footer Stats!!!!!
+Address:140286828101984	Footer Size:104
+Requested Size:40
+
+!!!!!Header Stats!!!!!
+Address:140286828101888	Next:140286828101720	Prev:140286828101648	Size:41
+
+!!!!!Footer Stats!!!!!
+Address:140286828101920	Footer Size:41
+
+<-----Broken Block----->
+
+!!!!!Header Stats!!!!!
+Address:140286828101928	Next:0	Prev:0	Size:64
+
+!!!!!Footer Stats!!!!!
+Address:140286828101984	Footer Size:64

@@ -61,17 +61,22 @@ int main(int argc, char* argv[]){
         struct timespec tim,tim2;
         tim.tv_sec = log2(n);
 //        nanosleep(&tim,&tim2);
-        sprintf(filename,"log%d.txt",n);
-        FILE * logFile = fopen(filename,"w+");
+
+//        sprintf(filename,"log%d.txt",n);
+//        FILE * logFile = fopen(filename,"w+");
+
         int retval = write(STDOUT_FILENO,&result,sizeof(result));
-        if(retval != 8){
-            sprintf(errorFilename,"error%d.txt",n);
-            FILE * errorLog = fopen(errorFilename,"w+");
-            fprintf(errorLog,"Not able to write the result");
-            fclose(errorLog);
-        }
-        fprintf(logFile,"%.32lf",result);
+
+//        if(retval != 8){
+//            sprintf(errorFilename,"error%d.txt",n);
+//            FILE * errorLog = fopen(errorFilename,"w+");
+//            fprintf(errorLog,"Not able to write the result");
+//            fclose(errorLog);
+//        }
+//        fprintf(logFile,"%.32lf",result);
+
 //        fprintf(stderr,"%d <%.32lf>\n",n,result);
-        fclose(logFile);
+
+//        fclose(logFile);
     }
 }
