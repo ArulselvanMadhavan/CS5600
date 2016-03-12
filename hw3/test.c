@@ -14,7 +14,6 @@
 #include "memlib.h"
 
 #define ALIGNMENT 8
-#define CHUNKSIZE (1<<12)
 
 #define ALIGN(size) (((size) + ALIGNMENT - 1) & ~(ALIGNMENT - 1))
 
@@ -23,15 +22,10 @@
 #define OVERHEAD_SIZE (HEADER_SIZE + FOOTER_SIZE)
 
 #define HEADER_TO_PAYLOAD(p) ((void *)((char *)(p) + HEADER_SIZE))
-#define FOOTER_TO_HEADER(p) ((header *)((char *)p - (GET(p) & ~1) + FOOTER_SIZE))
+//#define FOOTER_TO_HEADER(p) ((header *)((char *)p - (GET(p) & ~1) + FOOTER_SIZE))
 #define HEADER_TO_FOOTER(p) ((footer *)((char *)p + (((header *)p)->size & ~1) - FOOTER_SIZE))
 
 #define PAYLOAD_TO_HEADER(bp) ((header *)((char *)bp - HEADER_SIZE))
-
-#define GET(p) (*(char *)(p))
-#define PUT(p, val) (*(char *) (p) = (val))
-#define GET_SIZE(p) (GET(p) & ~0x7)
-#define GET_ALLOC(p) (GET(p) & 0x1)
 
 #define NEXT_NEIGH(bp) ((header *)((char *) (bp) + (((header *)(bp))->size & ~0x1)))
 #define PREV_NEIGH(bp) ((header *)((char *) (bp) - (((footer *)((char *)(bp) - FOOTER_SIZE))->size & ~0x1)))
@@ -69,10 +63,15 @@ header * findFreeBlock(int binId,size_t totalSize);
 header * divideBlock(header *startPtr,size_t totalSize,FILE *mallocLog);
 void *m_calloc(size_t n, size_t size);
 void * addToHeap(header * blk);
+void m_check();
+void checkNext(header * current,int binId);
+void checkPrev(header * current,int binId);
+void checkBlockSize(header * current,int binId);
 //<-----------------Global Variables ------------------->
 header *start, *end;
-const int bins_COUNT = 9;
-header *bins[9];
+const int bins_COUNT = 8;
+const int bin_OFFSET = 2;
+header *bins[8];
 FILE * coalesceLog;
 FILE * freeLog;
 FILE * mallocLog;
@@ -160,12 +159,12 @@ size_t getBlockSize(size_t size) {
 int findbin(size_t requestedSize) {
     int binId = 0;
     requestedSize-=1; //TO make the powers of 2 inclusive in the bin.
-    while (requestedSize != 1 && binId < bins_COUNT)
+    while (requestedSize != 1 && (binId - bin_OFFSET) < (bins_COUNT - 1))
     {
         binId ++;
         requestedSize = requestedSize >> 1;
     }
-    return binId;
+    return binId - bin_OFFSET;
 }
 
 /**
@@ -205,11 +204,11 @@ void * extendHeap(size_t totalSize) {
 
     //Add new block next to start
     newBlock->size =  (totalSize | 0x1); //SEt the last bit to 1
+    HEADER_TO_FOOTER(newBlock)->size = (totalSize | 0x1);
     newBlock->next = start->next;
     newBlock->prev = start;
     start->next = (void *)newBlock;
     ((header *)(newBlock->next))->prev = (void *)newBlock;
-
     assert(((char *)getmem_brk() - HEADER_SIZE) == (char *)end);
 
     //Print stats
@@ -262,7 +261,6 @@ void f_free(void * ptr)
 {
     header * ptrAtHead = (header *)PAYLOAD_TO_HEADER(ptr); //Very Important
     fprintf(freeLog,"\nFreeing %ld\n",(long)ptrAtHead);
-    fflush(freeLog);
     addFreeBlockToBin(ptrAtHead);
 }
 
@@ -287,7 +285,9 @@ void addFreeBlockToBin(header * bp)
     }
     else
     {
+        fprintf(freeLog,"Found free bin %d for block:%ld\n",binId,(long)bp);
         header * current = bins[binId];
+        fprintf(freeLog,"Bin %d starts with block:%ld",binId,(long)current);
         while(current->next != NULL && current->size < bp->size)
         {
             current = current->next;
@@ -326,10 +326,7 @@ int getBinIdFromTotalSize(size_t totalSize,FILE * logFile)
     fprintf(logFile,"Total Size:%d\t",(int) totalSize);
     size_t alignedSize = totalSize - OVERHEAD_SIZE;
     fprintf(logFile,"Aligned Size:%d\n",(int)alignedSize);
-    if(alignedSize > 512)
-        binId = 9;
-    else
-        binId = findbin(alignedSize);
+    binId = findbin(alignedSize);
     fprintf(logFile,"BinId %d for Size %d\n",binId,(int)alignedSize);
     return binId;
 }
@@ -490,7 +487,7 @@ int isEmptyBin(int binId)
 
 header * findFreeBlock(int binId,size_t totalSize)
 {
-    printf("Bin Id:%d\n",binId);
+//    printf("Bin Id:%d\n",binId);
     if(isEmptyBin(binId)) {
         binId++;
         if (binId < bins_COUNT)
@@ -689,4 +686,82 @@ void * addToHeap(header * blk)
     start->next = (void *)blk;
     ((header *)(blk->next))->prev = (void *)blk;
     return blk;
+}
+
+
+/**
+ * Check the heap for consistency
+ */
+void m_check()
+{
+    int i,blocksCount = 0;
+    header * current;
+    for(i=0;i<bins_COUNT;i++)
+    {
+        blocksCount = 0;
+        current = bins[i];
+        while(current != NULL)
+        {
+            //Check if the free block is actually marked as free
+            int headerStatus = current->size & 0x1;
+            int footerStatus = HEADER_TO_FOOTER(current)->size & 0x1;
+            if(headerStatus || footerStatus)
+            {
+                printf("Error:Bin Id:%d\n Free block %ld is marked as allocated\n",i,(long)current);
+            }
+            checkNext(current,i);
+            checkPrev(current,i);
+            checkBlockSize(current,i);
+            current = current->next;
+            blocksCount++;
+        }
+        if(blocksCount)
+            printf("Bin %d contains %d blocks\n",i,blocksCount);
+    }
+    current = start;
+    while(current != end)
+    {
+        if(current->size != (HEADER_TO_FOOTER(current)->size))
+        {
+            printf("Error:Header size %d and "
+                           "footer size %d don't match for block:%ld\n",
+                   (int)current->size,(int)HEADER_TO_FOOTER(current)->size,(long)current);
+        }
+        current = NEXT_NEIGH(current);
+    }
+
+}
+
+void checkNext(header * current,int binId)
+{
+    if(current->next != NULL)
+    {
+        header * nextBlock = NEXT_NEIGH(current);
+        if(nextBlock->prev != current)
+        {
+            printf("Error:Bin Id:%d\nNext Block of:%ld's has incorrect prev\n",binId,(long)current);
+        }
+    }
+}
+
+void checkPrev(header * current,int binId)
+{
+    if(current->prev != NULL)
+    {
+        header * prevBlock = PREV_NEIGH(current);
+        if(prevBlock->next != current)
+        {
+            printf("Error:Bin Id:%d\nPrev Block of:%ld's has incorrect next\n",binId,(long)current);
+        }
+    }
+}
+
+void checkBlockSize(header * current,int binId)
+{
+    if(current->size < 1 << binId)
+    {
+        printf("Error:Bin Id:%d\n"
+                       " Block Id:%ld with incorrect size %d \n",
+               binId,(long)current,(int)MY_GET_SIZE(current->size));
+    }
 }

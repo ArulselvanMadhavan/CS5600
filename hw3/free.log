@@ -1,143 +1,29 @@
 
-!!!!!Header Stats!!!!!
-Address:140286828101840	Next:0	Prev:0	Size:48
-
-!!!!!Footer Stats!!!!!
-Address:140286828101880	Footer Size:48
-Safely Disconnecting 140286828101840 from Previous and Next
-Total Size:48	Aligned Size:16
-BinId 3 for Size 16
-No Bin for 3	Creating New Bin....	BinId:3
-
-!!!!!Printing Bin:3!!!!!
-Address:140286828101840,Actual Size:16,Block Size:48,Next:0,Prev:0
-
-Found a Previous Free block at 140286828101840
-Safely Disconnecting 140286828101840 from Previous and Next
-
-Freeing 140286828101792
+Freeing 139871505170520
 
 !!!!!Header Stats!!!!!
-Address:140286828101792	Next:140286828101720	Prev:140286828101888	Size:96
+Address:139871505170520	Next:139871505170480	Prev:139871505170448	Size:552
 
 !!!!!Footer Stats!!!!!
-Address:140286828101880	Footer Size:96
-Safely Disconnecting 140286828101792 from Previous and Next
-Total Size:96	Aligned Size:64
-BinId 5 for Size 64
+Address:139871505171064	Footer Size:552
+Safely Disconnecting 139871505170520 from Previous and Next
+Total Size:552	Aligned Size:520
+BinId 7 for Size 520
+No Bin for 7	Creating New Bin....	BinId:7
+
+!!!!!Printing Bin:7!!!!!
+Address:139871505170520,Actual Size:520,Block Size:552,Next:0,Prev:0
+Safely Disconnecting 139871505170520 from Previous and Next
+
+!!!!!Header Stats!!!!!
+Address:139871505170856	Next:0	Prev:0	Size:216
+
+!!!!!Footer Stats!!!!!
+Address:139871505171064	Footer Size:216
+Safely Disconnecting 139871505170856 from Previous and Next
+Total Size:216	Aligned Size:184
+BinId 5 for Size 184
 No Bin for 5	Creating New Bin....	BinId:5
 
 !!!!!Printing Bin:5!!!!!
-Address:140286828101792,Actual Size:64,Block Size:96,Next:0,Prev:0
-
-!!!!!Header Stats!!!!!
-Address:140286828101928	Next:0	Prev:0	Size:64
-
-!!!!!Footer Stats!!!!!
-Address:140286828101984	Footer Size:64
-Safely Disconnecting 140286828101928 from Previous and Next
-Total Size:64	Aligned Size:32
-BinId 4 for Size 32
-No Bin for 4	Creating New Bin....	BinId:4
-
-!!!!!Printing Bin:4!!!!!
-Address:140286828101928,Actual Size:32,Block Size:64,Next:0,Prev:0
-
-Freeing 140286828101888
-
-!!!!!Header Stats!!!!!
-Address:140286828101888	Next:140286828101720	Prev:140286828101648	Size:40
-
-!!!!!Footer Stats!!!!!
-Address:140286828101920	Footer Size:40
-Safely Disconnecting 140286828101888 from Previous and Next
-
-Found a Previous Free block at 140286828101792
-Safely Disconnecting 140286828101792 from Previous and Next
-
-Found a Previous Free block at 140286828101928
-Safely Disconnecting 140286828101928 from Previous and Next
-Total Size:200	Aligned Size:168
-BinId 7 for Size 168
-No Bin for 7	Creating New Bin....	BinId:7
-
-!!!!!Printing Bin:7!!!!!
-Address:140286828101792,Actual Size:168,Block Size:200,Next:0,Prev:0
-
-Freeing 140286828101680
-
-!!!!!Header Stats!!!!!
-Address:140286828101680	Next:140286828101992	Prev:140286828101720	Size:40
-
-!!!!!Footer Stats!!!!!
-Address:140286828101712	Footer Size:40
-Safely Disconnecting 140286828101680 from Previous and Next
-Total Size:40	Aligned Size:8
-BinId 2 for Size 8
-No Bin for 2	Creating New Bin....	BinId:2
-
-!!!!!Printing Bin:2!!!!!
-Address:140286828101680,Actual Size:8,Block Size:40,Next:0,Prev:0
-
-Freeing 140286828101720
-
-!!!!!Header Stats!!!!!
-Address:140286828101720	Next:140286828101992	Prev:140286828101648	Size:72
-
-!!!!!Footer Stats!!!!!
-Address:140286828101784	Footer Size:72
-Safely Disconnecting 140286828101720 from Previous and Next
-
-Found a Previous Free block at 140286828101680
-Safely Disconnecting 140286828101680 from Previous and Next
-
-Found a Previous Free block at 140286828101792
-Safely Disconnecting 140286828101792 from Previous and Next
-Total Size:312	Aligned Size:280
-BinId 8 for Size 280
-No Bin for 8	Creating New Bin....	BinId:8
-
-!!!!!Printing Bin:8!!!!!
-Address:140286828101680,Actual Size:280,Block Size:312,Next:0,Prev:0
-Safely Disconnecting 140286828101680 from Previous and Next
-
-!!!!!Header Stats!!!!!
-Address:140286828101720	Next:0	Prev:0	Size:272
-
-!!!!!Footer Stats!!!!!
-Address:140286828101984	Footer Size:272
-Safely Disconnecting 140286828101720 from Previous and Next
-Total Size:272	Aligned Size:240
-BinId 7 for Size 240
-No Bin for 7	Creating New Bin....	BinId:7
-
-!!!!!Printing Bin:7!!!!!
-Address:140286828101720,Actual Size:240,Block Size:272,Next:0,Prev:0
-Safely Disconnecting 140286828101720 from Previous and Next
-
-!!!!!Header Stats!!!!!
-Address:140286828101800	Next:0	Prev:0	Size:192
-
-!!!!!Footer Stats!!!!!
-Address:140286828101984	Footer Size:192
-Safely Disconnecting 140286828101800 from Previous and Next
-Total Size:192	Aligned Size:160
-BinId 7 for Size 160
-No Bin for 7	Creating New Bin....	BinId:7
-
-!!!!!Printing Bin:7!!!!!
-Address:140286828101800,Actual Size:160,Block Size:192,Next:0,Prev:0
-Safely Disconnecting 140286828101800 from Previous and Next
-
-!!!!!Header Stats!!!!!
-Address:140286828101896	Next:0	Prev:0	Size:96
-
-!!!!!Footer Stats!!!!!
-Address:140286828101984	Footer Size:96
-Safely Disconnecting 140286828101896 from Previous and Next
-Total Size:96	Aligned Size:64
-BinId 5 for Size 64
-No Bin for 5	Creating New Bin....	BinId:5
-
-!!!!!Printing Bin:5!!!!!
-Address:140286828101896,Actual Size:64,Block Size:96,Next:0,Prev:0
+Address:139871505170856,Actual Size:184,Block Size:216,Next:0,Prev:0

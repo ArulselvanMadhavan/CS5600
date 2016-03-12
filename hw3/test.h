@@ -22,4 +22,5 @@ extern void * printList(void * ptr,FILE * logFile);
 extern void f_free(void * ptr);
 extern int getBinIdFromSize(size_t);
 extern void printAllBins(void);
+extern void m_check();
 #endif //HW3_TEST_H
