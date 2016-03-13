@@ -30,6 +30,10 @@
 #define NEXT_NEIGH(bp) ((header *)((char *) (bp) + (((header *)(bp))->size & ~0x1)))
 #define PREV_NEIGH(bp) ((header *)((char *) (bp) - (((footer *)((char *)(bp) - FOOTER_SIZE))->size & ~0x1)))
 #define MY_GET_SIZE(bp) (((header *)(bp))->size & ~0x1)
+
+//<---------------- Global Constants------------------->
+const int bins_COUNT = 8;
+const int bin_OFFSET = 2;
 //<----------------Struct Declarations----------------->
 typedef struct {
     size_t size;
@@ -40,6 +44,13 @@ typedef struct {
 typedef struct {
     size_t size;        /* Size of this block, including header */
 } footer;
+typedef struct {
+    pthread_mutex_t lock;
+    int arena_init_flag;
+    header * arenaStart, *arenaEnd;
+    header * arena_bins[8];
+    int arenaId;
+} arena;
 
 //<-----------------Function Declarations--------------->
 void *extendHeap(size_t size);
@@ -80,8 +91,7 @@ static __thread int debug = 0;
 static __thread int tid = 0;
 static __thread int memReqs;
 static __thread int freeReqs;
-const int bins_COUNT = 8;
-const int bin_OFFSET = 2;
+
 static __thread header *bins[8];
 FILE * coalesceLog;
 FILE * freeLog;
