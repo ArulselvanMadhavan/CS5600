@@ -1,9 +1,4 @@
-/*
- * memlib.c - a module that simulates the memory system.  Needed
- * because it allows us to interleave calls from the student's malloc
- * package with the system's malloc package in libc.
- *
- */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -14,51 +9,74 @@
 
 #include "memlib.h"
 
-#define MAX_HEAP (20*(1<<20))  /* 20 MB */
+#define PAGE_SIZE (20*(1<<20))  /* 20 MB */
 
 
-/* $begin memlib */
 /* Private global variables */
-static char *mem_heap;     /* Points to first byte of heap */
-static char *mem_brk;      /* Points to last byte of heap plus 1 */
-static char *mem_max_addr; /* Max legal heap addr plus 1*/
+static __thread char *heap_start;
+static __thread char *mem_brk;
+static __thread char *heap_end;
+
 
 /*
  * mem_init - Initialize the memory system model
  */
 void mem_init(void)
 {
-    if ((mem_heap = (char *)malloc(MAX_HEAP)) == NULL)
+//    printf("SBRK Start Position:%ld\n",(long));
+//    printf("SBRK ENd Position:%ld\n",(long)sbrk(0));
+    if ((heap_start = (char *)sbrk(PAGE_SIZE)) == NULL)
     {
-        fprintf(stderr, "mem_init_vm: malloc error\n");
+        fprintf(stderr, "mem_init_vm: sbrk error\n");
         exit(1);
     }
-    mem_brk = (char *)mem_heap;
-    printf("Heap Start Address:%ld\n",(long)mem_heap);
-    mem_max_addr = (char *)(mem_heap + MAX_HEAP);
-    printf("Heap End Address:%ld\n",(long)mem_max_addr);
+    mem_brk = (char *)heap_start;
+    printf("Sbrk Start Address:%ld\n",(long)heap_start);
+    heap_end = (char *)(heap_start + PAGE_SIZE);
+    printf("Sbrk End Address:%ld\n",(long)heap_end);
 }
 
-/*
- * mem_sbrk - Simple model of the sbrk function. Extends the heap
- *    by incr bytes and returns the start address of the new area. In
- *    this model, the heap cannot be shrunk.
- */
-void *mem_sbrk(int incr)
+void * heap_sbrk(int increment)
 {
     char *old_brk = mem_brk;
-    printf("Requested Size:%d\n",incr);
-    printf("Old brk pointer Address:%ld\n",(long)old_brk);
-    if ( (incr < 0) || ((mem_brk + incr) > mem_max_addr)) {
+    if((increment < 0))
+    {
         errno = ENOMEM;
-        fprintf(stderr, "ERROR: mem_sbrk failed. Ran out of memory...\n");
+        fprintf(stderr, "ERROR: Incorrect increment given.\n");
         return (void *)-1;
     }
-    mem_brk += incr;
-    printf("New brk pointer Address:%ld\n",(long)mem_brk);
+    if((mem_brk + increment) > heap_end)
+    {
+        long res = (long)sbrk(PAGE_SIZE);
+        if(res < 0)
+        {
+            errno = ENOMEM;
+            fprintf(stderr, "ERROR: Ran out of memory...\n");
+            return (void *)-1;
+        }
+        assert(heap_end == (char *)res);
+        heap_end = sbrk(0);
+        fprintf(stderr,"Requesting for a new page. New Sbrk End:%ld\n",(long)heap_end);
+    }
+    mem_brk += increment;
+    printf("New Heap pointer Address:%ld\n",(long)mem_brk);
     return (void *)old_brk;
 }
-/* $end memlib */
+
+//void *mem_sbrk(int incr)
+//{
+//    char *old_brk = mem_brk;
+//    printf("Requested Size:%d\n",incr);
+//    printf("Old brk pointer Address:%ld\n",(long)old_brk);
+//    if ( (incr < 0) || ((mem_brk + incr) > heap_end)) {
+//        errno = ENOMEM;
+//        fprintf(stderr, "ERROR: mem_sbrk failed. Ran out of memory...\n");
+//        return (void *)-1;
+//    }
+//    mem_brk += incr;
+//    printf("New brk pointer Address:%ld\n",(long)mem_brk);
+//    return (void *)old_brk;
+//}
 
 /*
  * mem_deinit - free the storage used by the memory system model
@@ -72,7 +90,7 @@ void mem_deinit(void)
  */
 void mem_reset_brk()
 {
-    mem_brk = (char *)mem_heap;
+    mem_brk = (char *)heap_start;
 }
 
 /*
@@ -80,7 +98,7 @@ void mem_reset_brk()
  */
 void *mem_heap_lo()
 {
-    return (void *)mem_heap;
+    return (void *)heap_start;
 }
 
 /*
@@ -96,7 +114,7 @@ void *mem_heap_hi()
  */
 size_t mem_heapsize()
 {
-    return (size_t)((void *)mem_brk - (void *)mem_heap);
+    return (size_t)((void *)mem_brk - (void *)heap_start);
 }
 
 /**

@@ -12,6 +12,7 @@
 #include "mm.h"
 #include "memlib.h"
 #include "test.h"
+#include <pthread.h>
 //#include "test.c"
 
 typedef struct {
@@ -100,8 +101,8 @@ void footerToPayload_tests()
 
 void initialize_heap_tests()
 {
-    int init_status = initialize_heap();
-    assert(0 == init_status);
+//    int init_status = initialize_heap();
+//    assert(0 == init_status);
 //    void * startPtr = getStartPointerAddress();
 //    printf("%p\n",startPtr);
 //    size_t size = getSizeFromheader(startPtr);
@@ -182,8 +183,9 @@ void findbin_WithOverhead()
 /**
  *
  */
-void malloc_tests()
+void * malloc_tests(void * var)
 {
+    printf("Starting %s\n",(char *)var);
     header * start = (header *)getStartPointerAddress();
     /**
      * Case#1: Basic Malloc check
@@ -218,8 +220,7 @@ void malloc_tests()
     void * BLOCK_3 = m_malloc(SIZE_3);
     printHeapAndBin(stdout);
     m_check();
-
-
+    return NULL;
 }
 
 size_t getTotalSizeOfHeap(header * start)
@@ -304,20 +305,67 @@ void printHeapAndBin(FILE * LOGFILE)
     printAllBins();
 }
 
+void * thread_tests(void * data)
+{
+//    pthread_t t1,t2;
+//    char * m1 = "T1";
+//    char * m2 = "T2";
+//    pthread_create(&t1,NULL,malloc_tests,(void *)m1);
+//    pthread_create(&t2,NULL,malloc_tests,(void *)m2);
+//    pthread_join(t1,NULL);
+//    pthread_join(t2,NULL);
+//    malloc_tests("Serial");
+//    setDebug();
+    int tid = *(int *)data;
+    setTID(tid+1);
+    void * addr1 = m_malloc(4);
+    void * addr2 = m_malloc(4);
+    void * addr3 = m_malloc(4);
+    f_free(addr2);
+    printf("Thread Id %d\n",tid+1);
+    sleep(tid + 5);
+    f_free(addr3);
+    f_free(addr1);
+    addr1 = m_malloc(24);
+    printf("Got a block at %ld\n",(long)addr1);
+    printHeapAndBin(stdout);
+    return NULL;
+}
+
+void threadWrapper()
+{
+    int i;
+    int count = 2;
+    int threadId[count];
+    pthread_t t[count];
+    for(i=0;i<count;i++)
+    {
+        threadId[i] = i;
+        pthread_create(&t[i],NULL,thread_tests,&threadId[i]);
+    }
+    for(i=0;i<count;i++)
+    {
+        pthread_join(t[i],NULL);
+    }
+}
+
 int main (int argc,char * argv[])
 {
     FILE * LOGFILE = fopen("unittests.log","w");
     FILE * HEAPLOG = fopen("heap.log","w+");
-    align_tests(LOGFILE);
-    headerAndFooterSize_tests(LOGFILE);
-    headerToPayload_tests(LOGFILE);
-    headerToFooter_tests();
-    initialize_heap_tests();
-    findbin_tests();
-    malloc_tests(HEAPLOG);
+    initializeLoggers();
+//    align_tests(LOGFILE);
+//    headerAndFooterSize_tests(LOGFILE);
+//    headerToPayload_tests(LOGFILE);
+//    headerToFooter_tests();
+//    initialize_heap_tests();
+//    findbin_tests();
+//    malloc_tests(HEAPLOG);
 //    realloc_tests(HEAPLOG);
 //    calloc_tests(HEAPLOG);
 //    footerToPayload_tests();
+    threadWrapper();
+//    thread_tests();
     fclose(LOGFILE);
     fclose(HEAPLOG);
     return 0;

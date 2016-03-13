@@ -1,29 +1,56 @@
 
-Freeing 139871505170520
-
 !!!!!Header Stats!!!!!
-Address:139871505170520	Next:139871505170480	Prev:139871505170448	Size:552
+Address:33427528	Next:33427488	Prev:33427568	Size:40
 
 !!!!!Footer Stats!!!!!
-Address:139871505171064	Footer Size:552
-Safely Disconnecting 139871505170520 from Previous and Next
-Total Size:552	Aligned Size:520
-BinId 7 for Size 520
-No Bin for 7	Creating New Bin....	BinId:7
-
-!!!!!Printing Bin:7!!!!!
-Address:139871505170520,Actual Size:520,Block Size:552,Next:0,Prev:0
-Safely Disconnecting 139871505170520 from Previous and Next
+Address:33427560	Footer Size:40
+Total Size:40	Aligned Size:8
+BinId 0 for Size 8
 
 !!!!!Header Stats!!!!!
-Address:139871505170856	Next:0	Prev:0	Size:216
+Address:54399088	Next:54399008	Prev:54398976	Size:40
 
 !!!!!Footer Stats!!!!!
-Address:139871505171064	Footer Size:216
-Safely Disconnecting 139871505170856 from Previous and Next
-Total Size:216	Aligned Size:184
-BinId 5 for Size 184
-No Bin for 5	Creating New Bin....	BinId:5
+Address:54399120	Footer Size:40
+Total Size:80	Aligned Size:48
+BinId 3 for Size 48
 
-!!!!!Printing Bin:5!!!!!
-Address:139871505170856,Actual Size:184,Block Size:216,Next:0,Prev:0
+!!!!!Header Stats!!!!!
+Address:54399008	Next:54399128	Prev:54398976	Size:40
+
+!!!!!Footer Stats!!!!!
+Address:54399040	Footer Size:40
+Total Size:120	Aligned Size:88
+BinId 4 for Size 88
+
+!!!!!Header Stats!!!!!
+Address:54399064	Next:0	Prev:0	Size:64
+
+!!!!!Footer Stats!!!!!
+Address:54399120	Footer Size:64
+Total Size:64	Aligned Size:32
+BinId 2 for Size 32
+
+!!!!!Header Stats!!!!!
+Address:33427568	Next:33427488	Prev:33427456	Size:40
+
+!!!!!Footer Stats!!!!!
+Address:33427600	Footer Size:40
+Total Size:80	Aligned Size:48
+BinId 3 for Size 48
+
+!!!!!Header Stats!!!!!
+Address:33427488	Next:33427608	Prev:33427456	Size:40
+
+!!!!!Footer Stats!!!!!
+Address:33427520	Footer Size:40
+Total Size:120	Aligned Size:88
+BinId 4 for Size 88
+
+!!!!!Header Stats!!!!!
+Address:33427544	Next:0	Prev:0	Size:64
+
+!!!!!Footer Stats!!!!!
+Address:33427600	Footer Size:64
+Total Size:64	Aligned Size:32
+BinId 2 for Size 32

@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
-
+#include <pthread.h>
 #include "mm.h"
 #include "memlib.h"
 
@@ -57,7 +57,7 @@ void removeNodeFromLL(header *bp);
 void printHeaderStats(header * bp,FILE * logFile);
 void printBin(int binId,FILE * fd);
 void printFooterStats(footer * bp,FILE * logFile);
-void initializeLoggers();
+int initializeLoggers();
 int isEmptyBin(int binId);
 header * findFreeBlock(int binId,size_t totalSize);
 header * divideBlock(header *startPtr,size_t totalSize,FILE *mallocLog);
@@ -67,11 +67,17 @@ void m_check();
 void checkNext(header * current,int binId);
 void checkPrev(header * current,int binId);
 void checkBlockSize(header * current,int binId);
+void initWrapper();
+void setDebug();
+void setTID(int threadId);
 //<-----------------Global Variables ------------------->
-header *start, *end;
+static __thread int initFlag = 0;
+static __thread header *start, *end;
+static __thread int debug = 0;
+static __thread int tid = 0;
 const int bins_COUNT = 8;
 const int bin_OFFSET = 2;
-header *bins[8];
+static __thread header *bins[8];
 FILE * coalesceLog;
 FILE * freeLog;
 FILE * mallocLog;
@@ -116,12 +122,28 @@ size_t getSizeFromFooter(void *ptr) {
 
 //<-------------Wrappers End------------->
 
-void initializeLoggers()
+void setTID(int threadId)
 {
-    coalesceLog = fopen("coalesce.log","w+");
-    freeLog = fopen("free.log","w+");
-    mallocLog = fopen("malloc.log","w+");
-    reallocLog = fopen("realloc.log","w+");
+    tid = threadId;
+}
+void setDebug()
+{
+    debug = 1;
+    return;
+}
+
+int initializeLoggers()
+{
+    char fileName [40];
+    sprintf(fileName,"coalesce%d.log",tid);
+    coalesceLog = fopen(fileName,"w+");
+    sprintf(fileName,"free%d.log",tid);
+    freeLog = fopen(fileName,"w+");
+    sprintf(fileName,"malloc%d.log",tid);
+    mallocLog = fopen(fileName,"w+");
+    sprintf(fileName,"realloc%d.log",tid);
+    reallocLog = fopen(fileName,"w+");
+    return 0;
 }
 
 int initialize_heap() {
@@ -131,10 +153,9 @@ int initialize_heap() {
         bins[i] = NULL;
     }
     mem_init();
-    printf("Initialized the heap successfully\n");
-    printf("Adding the prologue header block\n");
-    if ((start = mem_sbrk(OVERHEAD_SIZE + HEADER_SIZE)) == NULL)
+    if ((start = heap_sbrk(OVERHEAD_SIZE + HEADER_SIZE)) == NULL)
         return -1;
+    printf("Prologue header block:%ld\n",(long)start);
     printf("Start Address:%ld\n",(long)start);
     start->size = (OVERHEAD_SIZE | 0x1);
     HEADER_TO_FOOTER(start)->size = (OVERHEAD_SIZE | 0x1);
@@ -168,11 +189,38 @@ int findbin(size_t requestedSize) {
 }
 
 /**
+ *
+ */
+void initWrapper()
+{
+    if(debug)
+        fprintf(mallocLog,"Initializing Malloc for %ld\n",pthread_self());
+    int res = initialize_heap();
+    if(debug)
+        fprintf(mallocLog,"Init Heap Result:%d\n",res);
+    if(res == 0)
+    {
+        initFlag = 1;
+        if(debug)
+            fprintf(mallocLog,"Initialization complete for %ld\n",pthread_self());
+    }
+    return;
+}
+
+/**
  * To find the bin Id -> Use the requested Size
  * For finding a place -> Use Total Size
  */
 void * m_malloc(size_t size) {
-    fprintf(mallocLog,"MALLOC REQUEST for %d\n",(int)size);
+    if(debug)
+    {
+        fprintf(mallocLog, "MALLOC REQUEST for %d\n", (int) size);
+        fprintf(mallocLog, "Init Flag Status:%d\n", initFlag);
+    }
+    if(initFlag == 0)
+    {
+        initWrapper();
+    }
     size_t alignedSize = ALIGN(size);
     size_t totalSize = alignedSize + OVERHEAD_SIZE;
     int binId = getBinIdFromTotalSize(totalSize,stdout);
@@ -191,7 +239,7 @@ void * m_malloc(size_t size) {
  */
 void * extendHeap(size_t totalSize) {
     printf("Extending HEAP\n");
-    mem_sbrk(totalSize);
+    heap_sbrk(totalSize);
     header * newBlock = end; //Old End becomes the new block
 
     //Move end to the last
@@ -259,8 +307,10 @@ void printList(void * ptr,FILE * logFile)
 
 void f_free(void * ptr)
 {
+
     header * ptrAtHead = (header *)PAYLOAD_TO_HEADER(ptr); //Very Important
-    fprintf(freeLog,"\nFreeing %ld\n",(long)ptrAtHead);
+    if(debug)
+        fprintf(freeLog,"\nFreeing %ld\n",(long)ptrAtHead);
     addFreeBlockToBin(ptrAtHead);
 }
 
@@ -279,15 +329,18 @@ void addFreeBlockToBin(header * bp)
     int binId = getBinIdFromTotalSize(MY_GET_SIZE(bp),freeLog);
     if(isEmptyBin(binId))
     {
-        fprintf(freeLog,"No Bin for %d\t"
+        if(debug)
+            fprintf(freeLog,"No Bin for %d\t"
                 "Creating New Bin....\tBinId:%d\n",binId,binId);
         bins[binId] = bp;
     }
     else
     {
-        fprintf(freeLog,"Found free bin %d for block:%ld\n",binId,(long)bp);
+        if(debug)
+            fprintf(freeLog,"Found free bin %d for block:%ld\n",binId,(long)bp);
         header * current = bins[binId];
-        fprintf(freeLog,"Bin %d starts with block:%ld",binId,(long)current);
+        if(debug)
+            fprintf(freeLog,"Bin %d starts with block:%ld",binId,(long)current);
         while(current->next != NULL && current->size < bp->size)
         {
             current = current->next;
@@ -316,7 +369,8 @@ void addFreeBlockToBin(header * bp)
         }
     }
     printf("\nPrinting Bin Status of %d\n",binId);
-    printBin(binId,freeLog);
+    if(debug)
+        printBin(binId,freeLog);
     printBin(binId,stdout);
 }
 
@@ -378,24 +432,30 @@ header * CoalescePrevious(header * ptr)
     }
     else
     {
-        fprintf(freeLog,"\nFound a Previous Free block at %ld\n",(long)prevHdr);
-        fprintf(coalesceLog,"Coalescing Previous:%ld with %ld\n",
-                (long)prevHdr,(long)ptr);
-        fprintf(coalesceLog,"!!!!!Coalescing!!!!!\n");
+        if(debug)
+        {
+            fprintf(freeLog, "\nFound a Previous Free block at %ld\n", (long) prevHdr);
+            fprintf(coalesceLog, "Coalescing Previous:%ld with %ld\n",
+                    (long) prevHdr, (long) ptr);
+            fprintf(coalesceLog, "!!!!!Coalescing!!!!!\n");
+        }
 
         //TODO:REmove from old Free list.
         removeBlockFromFreeList(prevHdr,stdout);
 
 
+        if(debug) {
+            fprintf(coalesceLog, "Before Coalescing\n");
+            printHeaderStats(prevHdr, coalesceLog);
+            printHeaderStats(ptr, coalesceLog);
+        }
 
-        fprintf(coalesceLog,"Before Coalescing\n");
-        printHeaderStats(prevHdr,coalesceLog);
-        printHeaderStats(ptr,coalesceLog);
-
-        fprintf(coalesceLog,"\nAfter Coalescing\n");
         prevHdr->size = prevHdr->size + ptr->size;
         HEADER_TO_FOOTER(ptr)->size = prevHdr->size; //Update the footer to have size
-        printFooterStats(HEADER_TO_FOOTER(ptr),coalesceLog);
+        if(debug) {
+            fprintf(coalesceLog, "\nAfter Coalescing\n");
+            printFooterStats(HEADER_TO_FOOTER(ptr), coalesceLog);
+        }
 
 
 //        fprintf(coalesceLog,"Coalesce:%ld,"
@@ -408,7 +468,7 @@ header * CoalescePrevious(header * ptr)
 //               allocBit,
 //               (int) ptr->size,
 //               (int) prevHdr->size);
-        fprintf(coalesceLog,"\n");
+//        fprintf(coalesceLog,"\n");
         return prevHdr;
     }
 }
@@ -423,7 +483,8 @@ void removeBlockFromFreeList(header * blk,FILE * logFile)
 //    fprintf(freeLog,"\nBlock at %ld has size %d\n",(long)blk,(int)blk->size);
     int binId = getBinIdFromTotalSize(blkSize,logFile);
     header * binPtr = bins[binId];
-    fprintf(logFile,"Block to be freed should be in Bin:%d\t%ld\n",binId,(long)binPtr);
+    if(debug)
+        fprintf(logFile,"Block to be freed should be in Bin:%d\t%ld\n",binId,(long)binPtr);
 
     //Move until you find the actual block in the free list
     //If the start node is the node node to be removed
@@ -434,7 +495,8 @@ void removeBlockFromFreeList(header * blk,FILE * logFile)
     if(binPtr == blk && binPtr->next == NULL)
     {
         //Case1
-        fprintf(logFile,"Only block in the bin.Emptying bin\n");
+        if(debug)
+            fprintf(logFile,"Only block in the bin.Emptying bin\n");
         bins[binId] = NULL;
     }
     removeNodeFromLL(binPtr);
@@ -445,7 +507,8 @@ void removeBlockFromFreeList(header * blk,FILE * logFile)
  */
 void removeNodeFromLL(header * bp)
 {
-    fprintf(freeLog,"Safely Disconnecting %ld from Previous and Next\n",(long)bp);
+    if(debug)
+        fprintf(freeLog,"Safely Disconnecting %ld from Previous and Next\n",(long)bp);
     header * prevNode = bp->prev;
     header * nextNode = bp->next;
     if(prevNode != NULL && prevNode->next != NULL)
@@ -499,13 +562,16 @@ header * findFreeBlock(int binId,size_t totalSize)
     else
     {
         //Jackpot: Return the first block that is available
-        fprintf(mallocLog,"Malloc Hit for binId %d\n",binId);
+        if(debug)
+            fprintf(mallocLog,"Malloc Hit for binId %d\n",binId);
         header * startPtr = bins[binId];
-        fprintf(mallocLog,"Current Size:%d\t"
+        if(debug)
+            fprintf(mallocLog,"Current Size:%d\t"
                         "Requested Size:%d\t,"
                         "Remaining Size+Overhead:%d\n",(int)startPtr->size,
                 (int)totalSize,
                 (int)(startPtr->size - totalSize - OVERHEAD_SIZE));
+
         if((startPtr->size) > totalSize)
         {
             //Divide the block into 2 and find a new bin for the second block
@@ -568,24 +634,29 @@ header * CoalesceNext(header * ptr)
         return ptr;
     }
     else {
-        fprintf(freeLog, "\nFound a Previous Free block at %ld\n", (long) nextHdr);
-        fprintf(coalesceLog, "Coalescing Next:%ld with %ld\n",
-                (long) nextHdr, (long) ptr);
-        fprintf(coalesceLog, "!!!!!Coalescing!!!!!\n");
+        if(debug)
+        {
+            fprintf(freeLog, "\nFound a Previous Free block at %ld\n", (long) nextHdr);
+            fprintf(coalesceLog, "Coalescing Next:%ld with %ld\n",
+                    (long) nextHdr, (long) ptr);
+            fprintf(coalesceLog, "!!!!!Coalescing!!!!!\n");
+        }
 
         //TODO:REmove from old Free list.
         removeBlockFromFreeList(nextHdr, stdout);
 
+        if(debug) {
+            fprintf(coalesceLog, "Before Coalescing\n");
+            printHeaderStats(nextHdr, coalesceLog);
+            printHeaderStats(ptr, coalesceLog);
+        }
 
-        fprintf(coalesceLog, "Before Coalescing\n");
-        printHeaderStats(nextHdr, coalesceLog);
-        printHeaderStats(ptr, coalesceLog);
-
-        fprintf(coalesceLog, "\nAfter Coalescing\n");
         ptr->size = nextHdr->size + ptr->size;
         HEADER_TO_FOOTER(nextHdr)->size = ptr->size; //Update the footer to have size
-        printFooterStats(HEADER_TO_FOOTER(ptr), coalesceLog);
-
+        if(debug) {
+            fprintf(coalesceLog, "\nAfter Coalescing\n");
+            printFooterStats(HEADER_TO_FOOTER(ptr), coalesceLog);
+        }
 
 //        fprintf(coalesceLog,"Coalesce:%ld,"
 //                       "Prev:%ld,"
@@ -597,7 +668,7 @@ header * CoalesceNext(header * ptr)
 //               allocBit,
 //               (int) ptr->size,
 //               (int) prevHdr->size);
-        fprintf(coalesceLog, "\n");
+//        fprintf(coalesceLog, "\n");
         return ptr;
     }
 }
@@ -729,7 +800,6 @@ void m_check()
         }
         current = NEXT_NEIGH(current);
     }
-
 }
 
 void checkNext(header * current,int binId)

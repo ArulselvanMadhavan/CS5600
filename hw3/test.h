@@ -9,6 +9,7 @@ extern size_t align_wrapper(size_t size);
 extern size_t getHeaderSize();
 extern size_t getFooterSize();
 extern void * headerToPayload_wrapper(void * ptr);
+extern int initializeLoggers();
 extern int initialize_heap();
 extern size_t getSizeFromheader(void * ptr);
 extern void * getStartPointerAddress();
@@ -23,4 +24,6 @@ extern void f_free(void * ptr);
 extern int getBinIdFromSize(size_t);
 extern void printAllBins(void);
 extern void m_check();
+extern void setDebug();
+extern void setTID(int threadId);
 #endif //HW3_TEST_H

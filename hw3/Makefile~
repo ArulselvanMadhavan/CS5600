@@ -23,4 +23,4 @@ check:	libmalloc.so test1
 dist:
 	dir=`basename $$PWD`; cd ..; tar cvf $$dir.tar ./$$dir; gzip $$dir.tar
 unit:
-	gcc -Wall test.c unittests.c -o tests
+	gcc -Wall memlib.c test.c unittests.c -o tests

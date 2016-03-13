@@ -1,10 +1,21 @@
 HEADER
 Size - Requested Size + HEADER_SIZE + FOOTER_SIZE
 
+Sbrk Handling:
+1. Each sbrk requests an Integer Multiple of the page size.
+2. The memory obtained by sbrk is maintained via the library memlib.c
+3. A pointer keeps track of the amount of memory requested so far by the malloc library.
 
 Basic Info of Heap:
 Start of the heap is identified by a header and footer block.
-End of the heap is identified by a footer block.
+End of the heap is identified by a header block with size 0.
+These block holds just marks the beginning and end of heap.
+Actual memory blocks between these prologue and epilogue blocks.
+________________			________
+|	|	|			|	|
+|Header	|Footer	|.......................|Header	|
+|_______|_______|			|_______|
+
 
 Header block size - 24 bytes
 Footer block size - 8 bytes.
@@ -31,6 +42,8 @@ A malloc request is serviced in the following order.
 2. If a block is found, divide the block to meet the requested size. 
 3. Requested block is returned to the user.
 4. The second half of the divided block is assigned to its appropriate range bin.
+5. If a block is not found, then extend the heap.
+4. Service the malloc request with the block achieved by extending the heap 
 
 1. Realloc(void * ptr,size_t newSize)
 Buffer size - 32 blocks.
