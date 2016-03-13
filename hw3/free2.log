@@ -1,0 +1,48 @@
+
+!!!!!Header Stats!!!!!
+Address:30392432	Next:30392392	Prev:30392320	Size:40
+
+!!!!!Footer Stats!!!!!
+Address:30392464	Footer Size:40
+Total Size:40	Aligned Size:8
+BinId 0 for Size 8
+
+!!!!!Header Stats!!!!!
+Address:51363952	Next:51363912	Prev:51363840	Size:40
+
+!!!!!Footer Stats!!!!!
+Address:51363984	Footer Size:40
+Total Size:40	Aligned Size:8
+BinId 0 for Size 8
+
+!!!!!Header Stats!!!!!
+Address:51363872	Next:51363992	Prev:51363912	Size:40
+
+!!!!!Footer Stats!!!!!
+Address:51363904	Footer Size:40
+Total Size:40	Aligned Size:8
+BinId 0 for Size 8
+
+!!!!!Header Stats!!!!!
+Address:30392352	Next:30392472	Prev:30392392	Size:40
+
+!!!!!Footer Stats!!!!!
+Address:30392384	Footer Size:40
+Total Size:40	Aligned Size:8
+BinId 0 for Size 8
+
+!!!!!Header Stats!!!!!
+Address:51363992	Next:51363912	Prev:51364048	Size:56
+
+!!!!!Footer Stats!!!!!
+Address:51364040	Footer Size:56
+Total Size:96	Aligned Size:64
+BinId 3 for Size 64
+
+!!!!!Header Stats!!!!!
+Address:30392472	Next:30392392	Prev:30392528	Size:56
+
+!!!!!Footer Stats!!!!!
+Address:30392520	Footer Size:56
+Total Size:96	Aligned Size:64
+BinId 3 for Size 64

@@ -70,11 +70,16 @@ void checkBlockSize(header * current,int binId);
 void initWrapper();
 void setDebug();
 void setTID(int threadId);
+void m_mallocStats(void);
+int getCountOfNonEmptyBins();
+void BinStats();
 //<-----------------Global Variables ------------------->
 static __thread int initFlag = 0;
 static __thread header *start, *end;
 static __thread int debug = 0;
 static __thread int tid = 0;
+static __thread int memReqs;
+static __thread int freeReqs;
 const int bins_COUNT = 8;
 const int bin_OFFSET = 2;
 static __thread header *bins[8];
@@ -228,6 +233,7 @@ void * m_malloc(size_t size) {
     if(newBlock == NULL) {
         newBlock = extendHeap(totalSize);
     }
+    memReqs++;
     return HEADER_TO_PAYLOAD(newBlock);
 }
 
@@ -312,6 +318,7 @@ void f_free(void * ptr)
     if(debug)
         fprintf(freeLog,"\nFreeing %ld\n",(long)ptrAtHead);
     addFreeBlockToBin(ptrAtHead);
+    freeReqs++;
 }
 
 /**
@@ -690,16 +697,19 @@ void * m_realloc(void * ptr, size_t newSize)
     currentBlk->size = currentBlk->size & ~0x1; //Reset the free bit
     HEADER_TO_FOOTER(currentBlk)->size = currentBlk->size;
 
-    fprintf(reallocLog,"REALLOC REQUEST for block head"
-            "at %ld\t Size:%d\n",(long)currentBlk,(int)newTotalSize);
-    printHeaderStats(currentBlk,reallocLog);
+    if(debug) {
+        fprintf(reallocLog, "REALLOC REQUEST for block head"
+                "at %ld\t Size:%d\n", (long) currentBlk, (int) newTotalSize);
+        printHeaderStats(currentBlk, reallocLog);
+    }
     if(newTotalSize < currentSize)
     {
         //Shrink the block
-        fprintf(reallocLog,"\nShrink the Block\n");
-        fprintf(reallocLog,"Current Block size:%d\t"
-                "Shrunk Block size:%d\n",(int)currentBlk->size,(int)newTotalSize);
-        fflush(reallocLog);
+        if(debug) {
+            fprintf(reallocLog, "\nShrink the Block\n");
+            fprintf(reallocLog, "Current Block size:%d\t"
+                    "Shrunk Block size:%d\n", (int) currentBlk->size, (int) newTotalSize);
+        }
         currentBlk = divideBlock(currentBlk,newTotalSize,reallocLog);
         currentBlk->size = currentBlk->size | 0x1;
         HEADER_TO_FOOTER(currentBlk)->size = currentBlk->size;
@@ -712,28 +722,34 @@ void * m_realloc(void * ptr, size_t newSize)
         int nextHasSpace = (currentSize + MY_GET_SIZE(nextHdr)) >= newTotalSize;
         if(!nextIsOccupied && nextHasSpace)
         {
-            fprintf(reallocLog,"Next Block Stats\n");
-            printHeaderStats(nextHdr,reallocLog);
-            fprintf(reallocLog,"Next->Occupied:%d"
-                            "->HasSpace:%d",
-                    nextIsOccupied,nextHasSpace);
-
+            if(debug) {
+                fprintf(reallocLog, "Next Block Stats\n");
+                printHeaderStats(nextHdr, reallocLog);
+                fprintf(reallocLog, "Next->Occupied:%d"
+                                "->HasSpace:%d",
+                        nextIsOccupied, nextHasSpace);
+            }
                 currentBlk = CoalesceNext(currentBlk);
                 currentBlk = divideBlock(currentBlk,newTotalSize,reallocLog);
                 currentBlk->size = currentBlk->size | 0x1;
                 HEADER_TO_FOOTER(currentBlk)->size = currentBlk->size;
-            fprintf(reallocLog,"\nCoalesced Block Stats\n");
-            printHeaderStats(currentBlk,reallocLog);
+            if(debug) {
+                fprintf(reallocLog, "\nCoalesced Block Stats\n");
+                printHeaderStats(currentBlk, reallocLog);
+            }
             return HEADER_TO_PAYLOAD(currentBlk);
         }
         else
         {
-            fprintf(reallocLog,"\nRequesting a block from heap\n");
+            if(debug)
+                fprintf(reallocLog,"\nRequesting a block from heap\n");
             void * newBlk = m_malloc(newSize);
             if (!newBlk) return NULL;
             header * newBlkHeader = PAYLOAD_TO_HEADER(newBlk);
-            fprintf(reallocLog,"New Realloc block stats\n");
-            printHeaderStats((header *)newBlkHeader,reallocLog);
+            if(debug) {
+                fprintf(reallocLog, "New Realloc block stats\n");
+                printHeaderStats((header *) newBlkHeader, reallocLog);
+            }
             memcpy(newBlk, ptr, currentBlk->size - OVERHEAD_SIZE);
             f_free(ptr);
             return newBlk;
@@ -834,4 +850,51 @@ void checkBlockSize(header * current,int binId)
                        " Block Id:%ld with incorrect size %d \n",
                binId,(long)current,(int)MY_GET_SIZE(current->size));
     }
+}
+
+int getCountOfNonEmptyBins()
+{
+    int i,count = 0;
+    for(i =0;i<bins_COUNT;i++)
+    {
+        if(bins[i] !=NULL)
+            count++;
+    }
+    return count;
+}
+
+int getBinSize(header * current)
+{
+    int c = 0;
+    while(current != NULL)
+    {
+        c++;
+        current = current->next;
+    }
+    return c;
+}
+
+/**
+ *
+ */
+void BinStats()
+{
+    int i;
+    for(i =0;i<bins_COUNT;i++)
+    {
+        if(bins[i]!=NULL)
+        {
+            printf("Total number of Free blocks in bin %d is :%d\n",i,getBinSize(bins[i]));
+        }
+    }
+}
+
+void m_mallocStats()
+{
+    printf("!!!!!MALLOC STATS!!!!!\n");
+    printf("Total Size of sbrk'ed memory:%d\n",(int)getSizeOfHeap());
+    printf("Total Number of non-empty bins:%d\n",getCountOfNonEmptyBins());
+    BinStats();
+    printf("Total Malloc Requests so far:%d\n",memReqs - 1); // -1 because initialize heap uses malloc
+    printf("Total Free Requests so far:%d\n",freeReqs);
 }

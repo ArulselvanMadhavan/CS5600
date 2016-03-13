@@ -133,3 +133,9 @@ size_t mem_pagesize()
 {
     return (size_t)getpagesize();
 }
+
+
+size_t getSizeOfHeap()
+{
+    return (size_t)(heap_end - heap_start);
+}

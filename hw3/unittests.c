@@ -321,21 +321,23 @@ void * thread_tests(void * data)
     void * addr1 = m_malloc(4);
     void * addr2 = m_malloc(4);
     void * addr3 = m_malloc(4);
-    f_free(addr2);
+//    f_free(addr2);
     printf("Thread Id %d\n",tid+1);
-    sleep(tid + 5);
+//    sleep(tid + 1);
     f_free(addr3);
     f_free(addr1);
     addr1 = m_malloc(24);
+    m_realloc(addr1,200);
     printf("Got a block at %ld\n",(long)addr1);
     printHeapAndBin(stdout);
+    m_mallocStats();
     return NULL;
 }
 
 void threadWrapper()
 {
     int i;
-    int count = 2;
+    int count = 3;
     int threadId[count];
     pthread_t t[count];
     for(i=0;i<count;i++)
@@ -365,7 +367,8 @@ int main (int argc,char * argv[])
 //    calloc_tests(HEAPLOG);
 //    footerToPayload_tests();
     threadWrapper();
-//    thread_tests();
+//    int i  =1;
+//    thread_tests(&i);
     fclose(LOGFILE);
     fclose(HEAPLOG);
     return 0;

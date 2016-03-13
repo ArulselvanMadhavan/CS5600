@@ -26,4 +26,5 @@ extern void printAllBins(void);
 extern void m_check();
 extern void setDebug();
 extern void setTID(int threadId);
+extern void m_mallocStats(void);
 #endif //HW3_TEST_H

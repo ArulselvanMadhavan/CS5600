@@ -11,3 +11,4 @@ void *mem_heap_hi(void);
 void *getmem_brk(void);
 size_t mem_heapsize(void);
 size_t mem_pagesize(void);
+size_t getSizeOfHeap(void);
