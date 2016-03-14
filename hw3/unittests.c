@@ -11,7 +11,7 @@
 #include <setjmp.h>
 #include "mm.h"
 #include "memlib.h"
-#include "test.h"
+#include "mymalloc.h"
 #include <pthread.h>
 //#include "test.c"
 
@@ -234,54 +234,54 @@ size_t getTotalSizeOfHeap(header * start)
     return count;
 }
 
-//void realloc_tests(FILE * LOGFILE)
-//{
-//    void * addr1 = m_malloc(1);
-//    void * addr2 = m_malloc(40);
-//    void * addr3 = m_malloc(64);
-//
-//
-//    /**
-//     * Scenario#1 - Realloc request is smaller than current block
-//     */
-//    int REALLOC_SIZE_1 = 14;
-//    int REALLOC_SIZE_2 = 64;
-//    int REALLOC_SIZE_3 = 72;
-//    int REALLOC_SIZE_4 = 1;
-//    void * newPtr = m_realloc(addr3,REALLOC_SIZE_1);
-//    fprintf(LOGFILE,"HEAP STATUS AFTER REALLOC %d\n",REALLOC_SIZE_1);
-//    printHeapAndBin(LOGFILE);
-//    printf("New Block %ld\n",(long)newPtr);
-//
-//    /**
-//     * Scenario#2 - Increase a realloc'ed block
-//     */
-//    newPtr = m_realloc(addr3,REALLOC_SIZE_2);
-//    fprintf(LOGFILE,"HEAP STATUS AFTER REALLOC %d\n",REALLOC_SIZE_2);
-//    printHeapAndBin(LOGFILE);
-//    printf("New Block %ld\n",(long)newPtr);
-//
-//    /**
-//     * Scenario#3 - Realloc to a greater size
-//     */
-//    newPtr = m_realloc(addr3,REALLOC_SIZE_3);
-//    fprintf(LOGFILE,"HEAP STATUS AFTER REALLOC %d\n",REALLOC_SIZE_3);
-//    printHeapAndBin(LOGFILE);
-//    printf("New Block %ld\n",(long)newPtr);
-//
-//    /**
-//     * Scenario#4 - Reduce realloc'ed block
-//     */
-//    newPtr = m_realloc(newPtr,REALLOC_SIZE_4);
-//    fprintf(stdout,"HEAP STATUS AFTER REALLOC %d\n",REALLOC_SIZE_4);
-//    printHeapAndBin(stdout);
-//    printf("New Block %ld\n",(long)newPtr);
-//    f_free(newPtr);
-//    f_free(addr1);
-//    f_free(addr2);
-////    f_free(addr3);
-//    printHeapAndBin(stdout);
-//}
+void realloc_tests(FILE * LOGFILE)
+{
+    void * addr1 = m_malloc(1);
+    void * addr2 = m_malloc(40);
+    void * addr3 = m_malloc(64);
+
+
+    /**
+     * Scenario#1 - Realloc request is smaller than current block
+     */
+    int REALLOC_SIZE_1 = 14;
+    int REALLOC_SIZE_2 = 64;
+    int REALLOC_SIZE_3 = 72;
+    int REALLOC_SIZE_4 = 1;
+    void * newPtr = m_realloc(addr3,REALLOC_SIZE_1);
+    fprintf(LOGFILE,"HEAP STATUS AFTER REALLOC %d\n",REALLOC_SIZE_1);
+    printHeapAndBin(LOGFILE);
+    printf("New Block %ld\n",(long)newPtr);
+
+    /**
+     * Scenario#2 - Increase a realloc'ed block
+     */
+    newPtr = m_realloc(addr3,REALLOC_SIZE_2);
+    fprintf(LOGFILE,"HEAP STATUS AFTER REALLOC %d\n",REALLOC_SIZE_2);
+    printHeapAndBin(LOGFILE);
+    printf("New Block %ld\n",(long)newPtr);
+
+    /**
+     * Scenario#3 - Realloc to a greater size
+     */
+    newPtr = m_realloc(addr3,REALLOC_SIZE_3);
+    fprintf(LOGFILE,"HEAP STATUS AFTER REALLOC %d\n",REALLOC_SIZE_3);
+    printHeapAndBin(LOGFILE);
+    printf("New Block %ld\n",(long)newPtr);
+
+    /**
+     * Scenario#4 - Reduce realloc'ed block
+     */
+    newPtr = m_realloc(newPtr,REALLOC_SIZE_4);
+    fprintf(stdout,"HEAP STATUS AFTER REALLOC %d\n",REALLOC_SIZE_4);
+    printHeapAndBin(stdout);
+    printf("New Block %ld\n",(long)newPtr);
+    f_free(newPtr);
+    f_free(addr1);
+    f_free(addr2);
+//    f_free(addr3);
+    printHeapAndBin(stdout);
+}
 
 //void calloc_tests(FILE * LOGFILE)
 //{
@@ -319,16 +319,19 @@ void * thread_tests(void * data)
     int tid = *(int *)data;
     setTID(tid+1);
     void * addr1 = m_malloc(4);
-    void * addr2 = m_malloc(4);
+    void * addr2 = m_malloc(513);
     void * addr3 = m_malloc(4);
-//    f_free(addr2);
+    f_free(addr2);
+//    f_free(addr1);
+//    f_free(addr3);
 //    printf("Thread Id %d\n",tid+1);
 //    sleep(tid + 1);
 //    f_free(addr3);
 //    f_free(addr1);
-    addr1 = m_malloc(24);
+    void * addr4 = m_malloc(24);
+    f_free(addr4);
 //    m_realloc(addr1,200);
-    printf("Got a block at %ld\n",(long)addr1);
+//    printf("Got a block at %ld\n",(long)addr1);
     printHeapAndBin(stdout);
     m_mallocStats();
     return NULL;
@@ -337,7 +340,7 @@ void * thread_tests(void * data)
 void threadWrapper()
 {
     int i;
-    int count = 3;
+    int count = 2;
     int threadId[count];
     pthread_t t[count];
     for(i=0;i<count;i++)
@@ -354,7 +357,7 @@ void threadWrapper()
 int main (int argc,char * argv[])
 {
     FILE * LOGFILE = fopen("unittests.log","w");
-    FILE * HEAPLOG = fopen("heap.log","w+");
+    FILE * HEAPLOG = fopen("some.log","w+");
     initializeLoggers();
 //    align_tests(LOGFILE);
 //    headerAndFooterSize_tests(LOGFILE);
@@ -366,9 +369,9 @@ int main (int argc,char * argv[])
 //    realloc_tests(HEAPLOG);
 //    calloc_tests(HEAPLOG);
 //    footerToPayload_tests();
-//    threadWrapper();
-    int i  =1;
-    thread_tests(&i);
+    threadWrapper();
+//    int i  =1;
+//    thread_tests(&i);
     fclose(LOGFILE);
     fclose(HEAPLOG);
     return 0;

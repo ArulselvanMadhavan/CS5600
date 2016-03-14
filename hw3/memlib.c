@@ -9,15 +9,14 @@
 
 #include "memlib.h"
 
-#define PAGE_SIZE (20*(1<<20))  /* 20 MB */
+#define PAGE_SIZE (20*(1<<20))
 
 
 /* Private global variables */
 static __thread char *heap_start;
 static __thread char *mem_brk;
 static __thread char *heap_end;
-
-
+static __thread char *old_brk;
 /*
  * mem_init - Initialize the memory system model
  */
@@ -38,7 +37,7 @@ void mem_init(void)
 
 void * heap_sbrk(int increment)
 {
-    char *old_brk = mem_brk;
+    old_brk = mem_brk;
     if((increment < 0))
     {
         errno = ENOMEM;

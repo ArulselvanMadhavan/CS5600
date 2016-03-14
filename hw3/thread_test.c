@@ -64,19 +64,40 @@ void* thread_func (void* data)
     return NULL;
 }
 
+typedef struct {
+    int flag ;
+} test;
+
+test * something[4];
+__attribute((constructor))
+void init()
+{
+    int i;
+    printf("Exec const\n");
+    for(i=0;i<4;i++)
+    {
+        something[i]->flag =0;
+    }
+    printf("%d\n",something[0]->flag);
+}
+
 int main()
 {
-    pthread_t tid[5];
-    int b=0;
-    int vals [5];
-    for (b=0; b<5; b++)
-    {
-        vals[b] = b*b;
-        printf("Before calling thread:%d\n",vals[b]);
-        pthread_create(&tid[b], NULL, thread_func,&vals[b]);
-    }
+//    pthread_t tid[5];
+//    int b=0;
+//    int vals [5];
+//    for (b=0; b<5; b++)
+//    {
+//        vals[b] = b*b;
+//        printf("Before calling thread:%d\n",vals[b]);
+//        pthread_create(&tid[b], NULL, thread_func,&vals[b]);
+//    }
+//
+//    for (b=0; b<5; b++)
+//        pthread_join(tid[b], NULL);
+//    return 0;
 
-    for (b=0; b<5; b++)
-        pthread_join(tid[b], NULL);
+
+    printf("%d\n",something[0]->flag);
     return 0;
 }

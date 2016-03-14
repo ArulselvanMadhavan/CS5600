@@ -55,11 +55,16 @@ If the newsize is less than the actual block, then the block is divided and the 
 
 
 Arenas
-1. Each arena has a init_flag.
+1. All arenas are initialized with a page of memory.
 2. Each arena has a pthread_mutex_t lock
 3. Each arena has a thread id that is using the current arena.
 4. Each thread acquires an arena and releases the arena. An arena is locked/released based on the pthread_mutex_t status.
 5. If the lock is released then the memory doesn't belong to any thread and can be used by any other thread.
+
+
+
+TODO:
+1. Arena init_flag should be initialized via a constructor.
 
 
 

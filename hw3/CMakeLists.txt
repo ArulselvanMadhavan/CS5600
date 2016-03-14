@@ -3,5 +3,5 @@ project(hw3)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES main.cpp test.c)
+set(SOURCE_FILES main.cpp mymalloc.c)
 add_executable(hw3 ${SOURCE_FILES})

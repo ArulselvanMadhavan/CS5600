@@ -1,0 +1,30 @@
+
+Freeing 49107016
+
+!!!!!Header Stats!!!!!
+Address:49107016	Next:49106976	Prev:49107568	Size:552
+
+!!!!!Footer Stats!!!!!
+Address:49107560	Footer Size:552
+Safely Disconnecting 49107016 from Previous and Next
+No Bin for 7	Creating New Bin....	BinId:7
+
+!!!!!Printing Bin:7!!!!!
+Address:49107016,Actual Size:520,Block Size:552,Next:0,Prev:0
+ze:496,Next:0,Prev:0
+
+Freeing 49107016
+
+!!!!!Header Stats!!!!!
+Address:49107016	Next:49107568	Prev:49106944	Size:56
+
+!!!!!Footer Stats!!!!!
+Address:49107064	Footer Size:56
+Safely Disconnecting 49107016 from Previous and Next
+
+Found a Previous Free block at 49107072
+Safely Disconnecting 49107072 from Previous and Next
+No Bin for 7	Creating New Bin....	BinId:7
+
+!!!!!Printing Bin:7!!!!!
+Address:49107016,Actual Size:520,Block Size:552,Next:0,Prev:0

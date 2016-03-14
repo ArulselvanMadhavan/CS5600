@@ -87,16 +87,20 @@ void BinStats();
 //<-----------------Global Variables ------------------->
 static __thread int initFlag = 0;
 static __thread header *start, *end;
-static __thread int debug = 0;
+static __thread int debug = 1;
 static __thread int tid = 0;
 static __thread int memReqs;
 static __thread int freeReqs;
 
 static __thread header *bins[8];
-FILE * coalesceLog;
-FILE * freeLog;
-FILE * mallocLog;
-FILE * reallocLog;
+int ARENAS_COUNT = 8;
+arena * arenas[8]; //Arenas Count
+
+static __thread FILE * coalesceLog;
+static __thread FILE * freeLog;
+static __thread FILE * mallocLog;
+static __thread FILE * reallocLog;
+static __thread FILE * heapLog;
 
 //<-------------Wrappers Start------------->
 size_t align_wrapper(size_t size) {
@@ -137,6 +141,26 @@ size_t getSizeFromFooter(void *ptr) {
 
 //<-------------Wrappers End------------->
 
+/**
+ * Lock Acquisition happens here.
+ *
+ */
+//arena * getAnUnlockedArena()
+//{
+//    while(1)
+//    {
+//        static __thread int i = 0;
+//        for (i = 0; i < ARENAS_COUNT; i++) {
+//            if (pthread_mutex_trylock(&arenas[i]->lock) == 0) {
+//                arenas[i]->arenaId = i;
+////                if(arenas[i]->arena_init_flag =)
+//                return arenas[i];
+//            }
+//        }
+//        sleep(1);
+//    }
+//}
+
 void setTID(int threadId)
 {
     tid = threadId;
@@ -158,6 +182,8 @@ int initializeLoggers()
     mallocLog = fopen(fileName,"w+");
     sprintf(fileName,"realloc%d.log",tid);
     reallocLog = fopen(fileName,"w+");
+    sprintf(fileName,"heap%d.log",tid);
+    heapLog = fopen(fileName,"w+");
     return 0;
 }
 
@@ -209,10 +235,14 @@ int findbin(size_t requestedSize) {
 void initWrapper()
 {
     if(debug)
-        fprintf(mallocLog,"Initializing Malloc for %ld\n",pthread_self());
+    {
+        fprintf(mallocLog, "Initializing Malloc for %ld\n", pthread_self());
+    }
     int res = initialize_heap();
     if(debug)
-        fprintf(mallocLog,"Init Heap Result:%d\n",res);
+    {
+        fprintf(mallocLog, "Init Heap Result:%d\n", res);
+    }
     if(res == 0)
     {
         initFlag = 1;
@@ -226,15 +256,22 @@ void initWrapper()
  * To find the bin Id -> Use the requested Size
  * For finding a place -> Use Total Size
  */
-void * m_malloc(size_t size) {
+void * m_malloc(size_t size)
+{
+    printf("Req received \n");
+    fflush(stdout);
     if(debug)
     {
-        fprintf(mallocLog, "MALLOC REQUEST for %d\n", (int) size);
-        fprintf(mallocLog, "Init Flag Status:%d\n", initFlag);
+        initializeLoggers();
     }
     if(initFlag == 0)
     {
         initWrapper();
+    }
+    if(debug)
+    {
+        fprintf(mallocLog, "MALLOC REQUEST for %d\n", (int) size);
+        fprintf(mallocLog, "Init Flag Status:%d\n", initFlag);
     }
     size_t alignedSize = ALIGN(size);
     size_t totalSize = alignedSize + OVERHEAD_SIZE;
@@ -243,6 +280,8 @@ void * m_malloc(size_t size) {
     if(newBlock == NULL) {
         newBlock = extendHeap(totalSize);
     }
+    printf("heap extended\n");
+    fflush(stdout);
     memReqs++;
     return HEADER_TO_PAYLOAD(newBlock);
 }
@@ -254,34 +293,41 @@ void * m_malloc(size_t size) {
  * 3. move epilogue header
  */
 void * extendHeap(size_t totalSize) {
-    printf("Extending HEAP\n");
+    if (debug)
+    {
+        fprintf(heapLog, "Extending HEAP\n");
+    }
+
     heap_sbrk(totalSize);
-    header * newBlock = end; //Old End becomes the new block
+    printf("heap_sbrk success\n");
+    fflush(stdout);
+    header *newBlock = end; //Old End becomes the new block
 
     //Move end to the last
 
-    end = (header *)((char *)newBlock + totalSize);
+    end = (header *) ((char *) newBlock + totalSize);
     end->next = newBlock->next;
     end->prev = newBlock->prev;
     end->size = 0x1;
-    ((header *)(newBlock->prev))->next = (void *) end;
+    ((header *) (newBlock->prev))->next = (void *) end;
 
     //Add new block next to start
-    newBlock->size =  (totalSize | 0x1); //SEt the last bit to 1
+    newBlock->size = (totalSize | 0x1); //SEt the last bit to 1
     HEADER_TO_FOOTER(newBlock)->size = (totalSize | 0x1);
     newBlock->next = start->next;
     newBlock->prev = start;
-    start->next = (void *)newBlock;
-    ((header *)(newBlock->next))->prev = (void *)newBlock;
-    assert(((char *)getmem_brk() - HEADER_SIZE) == (char *)end);
+    start->next = (void *) newBlock;
+    ((header *) (newBlock->next))->prev = (void *) newBlock;
+    assert(((char *) getmem_brk() - HEADER_SIZE) == (char *) end);
 
     //Print stats
-    printf("Old End:%ld\n",(long)newBlock);
-    printf("New End:%ld\n",(long)end);
-    printAddressAsLong("New Block Address",newBlock);
-    printAddressAsLong("New Block Next",newBlock->next);
-    printAddressAsLong("New Block Prev",newBlock->prev);
-    printf("New Block Size:%d\n",(int)newBlock->size);
+//    if (debug) {
+//    fprintf(heapLog,"New End:%ld\n", (long) end);
+//    fprintf(heapLog,"New Block Address:%ld\n", newBlock);
+//    printAddressAsLong("New Block Next", newBlock->next);
+//    printAddressAsLong("New Block Prev", newBlock->prev);
+//    printf("New Block Size:%d\n", (int) newBlock->size);
+//    }
     return newBlock;
 }
 
@@ -394,11 +440,11 @@ void addFreeBlockToBin(header * bp)
 int getBinIdFromTotalSize(size_t totalSize,FILE * logFile)
 {
     int binId;
-    fprintf(logFile,"Total Size:%d\t",(int) totalSize);
+//    fprintf(logFile,"Total Size:%d\t",(int) totalSize);
     size_t alignedSize = totalSize - OVERHEAD_SIZE;
-    fprintf(logFile,"Aligned Size:%d\n",(int)alignedSize);
+//    fprintf(logFile,"Aligned Size:%d\n",(int)alignedSize);
     binId = findbin(alignedSize);
-    fprintf(logFile,"BinId %d for Size %d\n",binId,(int)alignedSize);
+//    fprintf(logFile,"BinId %d for Size %d\n",binId,(int)alignedSize);
     return binId;
 }
 

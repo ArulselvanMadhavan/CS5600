@@ -1,0 +1,29 @@
+Initializing Malloc for 140606931040000
+te for 140606931040000
+MALLOC REQUEST for 4
+Init Flag Status:1
+aining Size+Overhead:464
+Block to be freed should be in Bin:7	49107016
+Only block in the bin.Emptying bin
+Block Divisible Status:464
+
+!!!!!Header Stats!!!!!
+Address:49107016	Next:0	Prev:0	Size:552
+
+!!!!!Footer Stats!!!!!
+Address:49107560	Footer Size:552
+Requested Size:56
+
+!!!!!Header Stats!!!!!
+Address:49107016	Next:0	Prev:0	Size:57
+
+!!!!!Footer Stats!!!!!
+Address:49107064	Footer Size:57
+
+<-----Broken Block----->
+
+!!!!!Header Stats!!!!!
+Address:49107072	Next:0	Prev:0	Size:496
+
+!!!!!Footer Stats!!!!!
+Address:49107560	Footer Size:496

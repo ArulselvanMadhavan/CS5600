@@ -1,24 +1,30 @@
 
-!!!!!Header Stats!!!!!
-Address:17268848	Next:17268808	Prev:17268736	Size:40
-
-!!!!!Footer Stats!!!!!
-Address:17268880	Footer Size:40
-Total Size:40	Aligned Size:8
-BinId 0 for Size 8
+Freeing 28135496
 
 !!!!!Header Stats!!!!!
-Address:17268768	Next:17268888	Prev:17268808	Size:40
+Address:28135496	Next:28135456	Prev:28136048	Size:552
 
 !!!!!Footer Stats!!!!!
-Address:17268800	Footer Size:40
-Total Size:40	Aligned Size:8
-BinId 0 for Size 8
+Address:28136040	Footer Size:552
+Safely Disconnecting 28135496 from Previous and Next
+No Bin for 7	Creating New Bin....	BinId:7
+
+!!!!!Printing Bin:7!!!!!
+Address:28135496,Actual Size:520,Block Size:552,Next:0,Prev:0
+ze:496,Next:0,Prev:0
+
+Freeing 28135496
 
 !!!!!Header Stats!!!!!
-Address:17268888	Next:17268808	Prev:17268944	Size:56
+Address:28135496	Next:28136048	Prev:28135424	Size:56
 
 !!!!!Footer Stats!!!!!
-Address:17268936	Footer Size:56
-Total Size:96	Aligned Size:64
-BinId 3 for Size 64
+Address:28135544	Footer Size:56
+Safely Disconnecting 28135496 from Previous and Next
+
+Found a Previous Free block at 28135552
+Safely Disconnecting 28135552 from Previous and Next
+No Bin for 7	Creating New Bin....	BinId:7
+
+!!!!!Printing Bin:7!!!!!
+Address:28135496,Actual Size:520,Block Size:552,Next:0,Prev:0

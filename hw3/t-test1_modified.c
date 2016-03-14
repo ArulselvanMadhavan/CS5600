@@ -69,7 +69,7 @@ static int pthread_create_wrapper(void *args)
 /* Visual Studio miscompiles this if it is inlined */
 static int pthread_create(pthread_t *th, void *attr, void *(* func)(void *), void *arg)
 {
-	struct _pthread_v *tv = calloc(1, sizeof(struct _pthread_v));
+	struct _pthread_v *tv = m_calloc(1, sizeof(struct _pthread_v));
 	
 	/* Ignore attributes for now */
 	(void) attr;
@@ -101,7 +101,7 @@ static int pthread_join(pthread_t t, void **res)
 		*res = tv->retval;
 	}
 	
-	free(tv);
+	f_free(tv);
 
 	return 0;
 }
@@ -119,7 +119,7 @@ static int pthread_join(pthread_t t, void **res)
 #define pthread_cond_t CONDITION_VARIABLE
 
 /* Hack - replace memalign with malloc, so we can compile */
-#define memalign(A, S) malloc(S)
+#define memalign(A, S) m_malloc(S)
 
 #else
 
@@ -279,14 +279,14 @@ static void bin_alloc(struct bin *m, size_t size, unsigned r)
 	if (r < 4)
 	{
 		/* memalign */
-		if (m->size > 0) free(m->ptr);
+		if (m->size > 0) f_free(m->ptr);
 		m->ptr = memalign(sizeof(int) << r, size);
 	}
 	else if (r < 20)
 	{
 		/* calloc */
-		if (m->size > 0) free(m->ptr);
-		m->ptr = calloc(size, 1);
+		if (m->size > 0) f_free(m->ptr);
+		m->ptr = m_calloc(size, 1);
 #if TEST > 0
 		if (zero_check(m->ptr, size))
 		{
@@ -304,13 +304,13 @@ static void bin_alloc(struct bin *m, size_t size, unsigned r)
 	{
 		/* realloc */
 		if (!m->size) m->ptr = NULL;
-		m->ptr = realloc(m->ptr, size);
+		m->ptr = m_realloc(m->ptr, size);
 	}
 	else
 	{
 		/* malloc */
-		if (m->size > 0) free(m->ptr);
-		m->ptr = malloc(size);
+		if (m->size > 0) f_free(m->ptr);
+		m->ptr = m_malloc(size);
 	}
 	if (!m->ptr)
 	{
@@ -338,7 +338,7 @@ static void bin_free(struct bin *m)
 	}
 #endif
 
-	free(m->ptr);
+	f_free(m->ptr);
 	m->size = 0;
 }
 
@@ -380,6 +380,7 @@ static void malloc_test(void *ptr, size_t stack_len)
 #endif
 {
 	struct thread_st *st = ptr;
+	setTID((long)st->id);
 	int i, pid = 1;
 	unsigned b, j, actions;
 	struct bin_info p;
@@ -405,8 +406,7 @@ static void malloc_test(void *ptr, size_t stack_len)
 		}
 	}
 #endif
-
-	p.m = malloc(st->bins * sizeof(*p.m));
+	p.m = m_malloc(st->bins * sizeof(*p.m));
 	p.bins = st->bins;
 	p.size = st->size;
 	for (b = 0; b < p.bins; b++)
@@ -448,7 +448,7 @@ static void malloc_test(void *ptr, size_t stack_len)
 	
 	for (b = 0; b < p.bins; b++) bin_free(&p.m[b]);
 	
-	free(p.m);
+	f_free(p.m);
 	
 #ifdef TEST_FORK
 end:
@@ -472,11 +472,11 @@ static int my_start_thread(struct thread_st *st)
 #if USE_PTHREADS
 	pthread_create(&st->id, NULL, malloc_test, st);
 #elif USE_THR
-	if (!st->sp) st->sp = malloc(STACKSIZE);
+	if (!st->sp) st->sp = m_malloc(STACKSIZE);
 	if (!st->sp) return -1;
 	thr_create(st->sp, STACKSIZE, malloc_test, st, THR_NEW_LWP, &st->id);
 #elif USE_SPROC
-	if (!st->sp) st->sp = malloc(STACKSIZE);
+	if (!st->sp) st->sp = m_malloc(STACKSIZE);
 	if (!st->sp) return -1;
 	st->id = sprocsp(malloc_test, PR_SALL, st, st->sp+STACKSIZE, STACKSIZE);
 	if (st->id < 0) return -1;
@@ -547,7 +547,7 @@ int main(int argc, char *argv[])
 	printf("total=%d threads=%d i_max=%d size=%ld bins=%d\n",
 		   n_total_max, n_thr, i_max, size, bins);
 
-	st = malloc(n_thr * sizeof(*st));
+	st = m_malloc(n_thr * sizeof(*st));
 	if (!st) exit(-1);
 
 #if !defined NO_THREADS && defined __sun__
@@ -573,7 +573,7 @@ int main(int argc, char *argv[])
 			n_thr = i;
 			break;
 		}
-		printf("Created thread %lx.\n", (long)st[i].id);
+		printf("Created thread %ld.\n", (long)st[i].id);
 	}
 
 	for (n_running = n_total = n_thr; n_running > 0;)
@@ -584,6 +584,7 @@ int main(int argc, char *argv[])
 
 		/* Wait for subthreads to finish. */
 #if USE_PTHREADS
+
 		pthread_cond_wait(&finish_cond, &finish_mutex);
 		for (i = 0; i < n_thr; i++)
 		{
@@ -642,11 +643,11 @@ int main(int argc, char *argv[])
 
 	for (i = 0; i < n_thr; i++)
 	{
-		if (st[i].sp) free(st[i].sp);
+		if (st[i].sp) f_free(st[i].sp);
 	}
-	free(st);
+	f_free(st);
 #if USE_MALLOC
-	malloc_stats();
+	m_mallocStats();
 #endif
 	printf("Done.\n");
 	return 0;

@@ -1,0 +1,14 @@
+Coalescing Next:28135552 with 28135496
+!!!!!Coalescing!!!!!
+Before Coalescing
+
+!!!!!Header Stats!!!!!
+Address:28135552	Next:0	Prev:0	Size:496
+
+!!!!!Header Stats!!!!!
+Address:28135496	Next:0	Prev:0	Size:56
+
+After Coalescing
+
+!!!!!Footer Stats!!!!!
+Address:28136040	Footer Size:552
